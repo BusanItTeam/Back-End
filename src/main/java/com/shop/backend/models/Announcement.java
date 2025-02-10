@@ -2,6 +2,7 @@ package com.shop.backend.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
 
@@ -20,6 +21,7 @@ public class Announcement {
     @Column(columnDefinition = "TEXT",nullable = false)
     private String content;
 
+    @CreationTimestamp
     @Column(nullable = false)
     private Timestamp createdAt;
 

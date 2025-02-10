@@ -2,6 +2,7 @@ package com.shop.backend.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
 
@@ -21,6 +22,7 @@ public class OrderStatusHistory {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
+    @CreationTimestamp
     @Column(nullable = false)
     private Timestamp changedAt;
 }

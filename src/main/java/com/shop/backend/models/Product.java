@@ -1,6 +1,8 @@
 package com.shop.backend.models;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
@@ -33,6 +35,7 @@ public class Product {
     @Column(length = 255)
     private String imageUrl;
 
+    @CreationTimestamp
     @Column(nullable = false)
     private Timestamp createdAt;
 

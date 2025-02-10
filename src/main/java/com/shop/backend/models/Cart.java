@@ -2,6 +2,7 @@ package com.shop.backend.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
 
@@ -24,6 +25,7 @@ public class Cart {
     @Column(nullable = false)
     private int quantity;
 
+    @CreationTimestamp
     @Column(nullable = false)
     private Timestamp createdAt;
 }

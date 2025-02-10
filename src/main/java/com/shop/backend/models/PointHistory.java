@@ -2,6 +2,7 @@ package com.shop.backend.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -22,7 +23,7 @@ public class PointHistory {
     private BigDecimal amount;
 
 
-
+    @CreationTimestamp
     @Column(nullable = false)
     private Timestamp createdAt;
 
