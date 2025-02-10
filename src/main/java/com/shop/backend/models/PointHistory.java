@@ -21,9 +21,7 @@ public class PointHistory {
     @Column(nullable = false,precision = 10,scale = 2)
     private BigDecimal amount;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private PointType type;
+
 
     @Column(nullable = false)
     private Timestamp createdAt;
