@@ -106,8 +106,8 @@ public class AuthController {
         }
 
         //가입하기(일단 .. 유저네임 이메일, 패스워드만 머리아픔..)
-        User user = new User(signupRequest.getUsername(),
-                signupRequest.getEmail(),
+        User user = new User(signupRequest.getUsername(), signupRequest.getEmail(), signupRequest.getPhoneNumber(),
+                signupRequest.getAddress(),
                 encoder.encode(signupRequest.getPassword()));
         
         //권한 리스트(시큐리티 유저 저장시 권한 리스트 필요)
@@ -142,6 +142,7 @@ public class AuthController {
         userRepository.save(user);
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
+
     @GetMapping("/user")
     //인증된 유저 정보 가져오기
     public ResponseEntity<?> getUserDetails(@AuthenticationPrincipal UserDetails userDetails) {

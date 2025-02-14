@@ -43,6 +43,7 @@ public class UserServiceImpl implements UserService {
         return user.orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+
     @Override
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id).orElseThrow(()
@@ -61,7 +62,6 @@ public class UserServiceImpl implements UserService {
                 user.isEnabled(),
                 user.getCredentialsExpiryDate(),
                 user.getAccountExpiryDate(),
-
                 user.getTwoFactorSecret(),
                 user.isTwoFactorEnabled(),
                 user.getSignUpMethod(),

@@ -2,6 +2,9 @@ package com.shop.backend.security.services;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.shop.backend.models.User;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,11 +22,13 @@ import java.util.Objects;
 public class UserDetailsImpl implements UserDetails {
     private static final long serialVersionUID = 1L;
 
+
     @Getter
     private Long id;
     private String username;
     @Getter
     private String email;
+    
 
     @JsonIgnore
     private String password;
@@ -41,6 +46,8 @@ public class UserDetailsImpl implements UserDetails {
         this.is2faEnabled = is2faEnabled;
         this.authorities = authorities;
     }
+
+
 
     public static UserDetailsImpl build(User user) {
         GrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().getRoleName().name());
@@ -70,6 +77,9 @@ public class UserDetailsImpl implements UserDetails {
     public String getUsername() {
         return username;
     }
+
+
+
 
     @Override
     public boolean isAccountNonExpired() {
