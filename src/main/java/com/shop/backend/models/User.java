@@ -6,9 +6,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -39,6 +37,11 @@ public class User {
     @Column(name = "email")
     private String email;
 
+    @Column(length = 255, unique = true)
+    @Getter
+    @Setter
+    private String phoneNumber;
+
     @Size(max = 120)
     @Column(name = "password")
     @JsonIgnore
@@ -62,12 +65,11 @@ public class User {
     private Role role;
 
 
-
     @Column(length = 255)
     private String address;
 
-    @Column(length = 50)
-    private String phone;
+
+
 
     @Column(precision = 10, scale = 2)
     private BigDecimal points;
@@ -92,16 +94,21 @@ public class User {
     private boolean isTwoFactorEnabled = false;
     private String signUpMethod;
 
-    public User(String userName, String email, String password) {
+    public User(String userName, String email, String phoneNumber, String address, String password) {
         this.userName = userName;
         this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.address = address;
         this.password = password;
+
     }
 
     public User(String userName, String email) {
         this.userName = userName;
         this.email = email;
     }
+
+
 
     @Override
     public boolean equals(Object o) {

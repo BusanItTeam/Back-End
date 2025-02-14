@@ -2,6 +2,7 @@ package com.shop.backend.security.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.Getter;
@@ -28,4 +29,15 @@ public class SignupRequest {
     @NotBlank
     @Size(min = 6, max = 40)
     private String password; //비밀번호 6~40자
+
+    @NotBlank
+    @Getter
+    @Setter
+    private String phoneNumber;
+
+    @NotBlank
+    @Setter
+    @Getter
+    private String address;
+
 }
