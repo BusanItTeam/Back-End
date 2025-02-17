@@ -35,9 +35,26 @@ public class SignupRequest {
     @Setter
     private String phoneNumber;
 
+
+    @NotBlank
+    @Getter
+    @Setter
+    private String postcode;
+
     @NotBlank
     @Setter
     @Getter
     private String address;
+
+
+    @Getter
+    @Setter
+    private String detailAddress;
+
+
+    @NotBlank
+    @Getter
+    @Setter
+    private String extraAddress;
 
 }
