@@ -66,8 +66,13 @@ public class User {
 
 
     @Column(length = 255)
+    private String postcode;
+    @Column(length = 255)
     private String address;
-
+    @Column(length = 255)
+    private String detailAddress;
+    @Column(length = 255)
+    private String extraAddress;
 
 
 
@@ -94,11 +99,14 @@ public class User {
     private boolean isTwoFactorEnabled = false;
     private String signUpMethod;
 
-    public User(String userName, String email, String phoneNumber, String address, String password) {
+    public User(String userName, String email, String phoneNumber, String postcode, String address, String detailAddress, String extraAddress, String password) {
         this.userName = userName;
         this.email = email;
         this.phoneNumber = phoneNumber;
+        this.postcode = postcode;
         this.address = address;
+        this.detailAddress = detailAddress;
+        this.extraAddress = extraAddress;
         this.password = password;
 
     }

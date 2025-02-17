@@ -89,7 +89,7 @@ public class SecurityConfig {
                     .orElseGet(() -> roleRepository.save(new Role(AppRole.ROLE_ADMIN)));
 
             if (!userRepository.existsByUserName("user1")) {
-                User user1 = new User("user1", "user1@example.com","01045454545","경남 양산시 양주로 1545", passwordEncoder.encode("password1") );
+                User user1 = new User("user1", "user1@example.com","01045454545","58565", "양주로154", "119동 1602호", "중부동,대동황토방", passwordEncoder.encode("password1") );
                 user1.setAccountNonLocked(false);
                 user1.setAccountNonExpired(true);
                 user1.setCredentialsNonExpired(true);
@@ -103,7 +103,7 @@ public class SecurityConfig {
             }
 
             if (!userRepository.existsByUserName("admin")) {
-                User admin = new User("admin", "admin@example.com","010-4545-4544", "경남 양산시 양주로154", passwordEncoder.encode("adminPass"));
+                User admin = new User("admin", "admin@example.com","010-4545-4544", "58575", "양주로154", "119동 1603호", "중부동,대동황토방",  passwordEncoder.encode("adminPass"));
                 admin.setAccountNonLocked(true);
                 admin.setAccountNonExpired(true);
                 admin.setCredentialsNonExpired(true);
