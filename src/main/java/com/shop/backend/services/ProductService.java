@@ -1,0 +1,44 @@
+package com.shop.backend.services;
+
+import com.shop.backend.models.Product;
+import com.shop.backend.repository.ProductRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class ProductService {
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    public List<Product> getAllProducts() {
+        return productRepository.findAll();
+    }
+
+    public Product saveProduct(Product product) {
+        return productRepository.save(product);
+    }
+
+    public Optional<Product> updateProduct(Long id, Product product) {
+        return productRepository.findById(id)
+                .map(existingProduct -> {
+                    existingProduct.setName(product.getName());
+                    existingProduct.setPrice(product.getPrice());
+                    existingProduct.setImageUrl(product.getImageUrl());
+                    existingProduct.setCategory(product.getCategory());
+                    return productRepository.save(existingProduct);
+                });
+    }
+
+    public boolean deleteProduct(Long id) {
+        return productRepository.findById(id)
+                .map(product -> {
+                    productRepository.delete(product);
+                    return true;
+                })
+                .orElse(false);
+    }
+}
