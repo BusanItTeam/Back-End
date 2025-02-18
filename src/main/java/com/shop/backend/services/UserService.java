@@ -18,4 +18,7 @@ public interface UserService {
 
     //유저 정보를 가져옴(유저네임)
     User findByUsername(String username);
+
+
+
 }
