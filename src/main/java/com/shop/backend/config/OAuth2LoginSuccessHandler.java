@@ -44,6 +44,8 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
     String username;
     String idAttributeKey;
 
+
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
         //소셜사이트 인증 성공시 받은 토큰 ?code=토큰
