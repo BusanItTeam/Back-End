@@ -4,6 +4,7 @@ import com.shop.backend.dto.UserDTO;
 import com.shop.backend.models.User;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserService {
 
@@ -20,5 +21,7 @@ public interface UserService {
     User findByUsername(String username);
 
 
+    Optional<User> findByEmail(String email);
 
+    User registerUser(User newUser);
 }
