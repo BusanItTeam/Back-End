@@ -30,18 +30,18 @@ public class SignupRequest {
     @Size(min = 6, max = 40)
     private String password; //비밀번호 6~40자
 
-    @NotBlank
+
     @Getter
     @Setter
     private String phoneNumber;
 
 
-    @NotBlank
+
     @Getter
     @Setter
     private String postcode;
 
-    @NotBlank
+
     @Setter
     @Getter
     private String address;
@@ -52,7 +52,7 @@ public class SignupRequest {
     private String detailAddress;
 
 
-    @NotBlank
+
     @Getter
     @Setter
     private String extraAddress;

@@ -8,6 +8,7 @@ import com.shop.backend.repository.RoleRepository;
 import com.shop.backend.repository.UserRepository;
 import com.shop.backend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +21,8 @@ public class UserServiceImpl implements UserService {
     UserRepository userRepository;
     @Autowired
     RoleRepository roleRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public void updateUserRole(Long userId, String roleName) {
@@ -49,6 +52,17 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id).orElseThrow(()
                 -> new RuntimeException("User not found"));
         return convertToDto(user);
+    }
+
+    public Optional<User> findByEmail(String email) {
+        Optional<User> user = userRepository.findByEmail(email);
+        return user;
+    }
+    @Override
+    public User registerUser(User user){
+        if(user.getPassword() != null)
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        return userRepository.save(user);
     }
 
     private UserDTO convertToDto(User user) {
