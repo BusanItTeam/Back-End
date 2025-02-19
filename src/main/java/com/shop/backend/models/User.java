@@ -2,6 +2,8 @@ package com.shop.backend.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -27,6 +29,7 @@ import java.util.List;
             @UniqueConstraint(columnNames = "email")
         })
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
@@ -52,8 +55,12 @@ public class User {
 
     @Size(max = 120)
     @Column(name = "username")
-    @JsonIgnore
+    @JsonProperty("userName")
     private String userName;
+    //사용자 이름
+
+    @Column(nullable = false)
+    private String name;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -81,7 +88,7 @@ public class User {
     private LocalDateTime updatedDate;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
+    @JsonManagedReference
     private List<Address> addresses = new ArrayList<>();
 
     private boolean accountNonLocked = true;
@@ -96,8 +103,9 @@ public class User {
     private boolean isTwoFactorEnabled = false;
     private String signUpMethod;
 
-    public User(String userName, String email, String phoneNumber,  String password) {
+    public User(String userName, String name, String email, String phoneNumber,  String password) {
         this.userName = userName;
+        this.name = name;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.addresses = new ArrayList<>();
@@ -109,6 +117,7 @@ public class User {
         this.userName = userName;
         this.email = email;
     }
+
 
 
 
@@ -143,7 +152,6 @@ public class User {
         addresses.add(address);
         address.setUser(this); // 양방향 관계 설정
     }
-
 
 
 }

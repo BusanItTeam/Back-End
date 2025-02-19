@@ -106,7 +106,7 @@ public class AuthController {
         }
 
         // 유저 객체 생성 (일단 유저네임, 이메일, 패스워드만)
-        User user = new User(signupRequest.getUsername(), signupRequest.getEmail(),
+        User user = new User(signupRequest.getUsername(),signupRequest.getName(), signupRequest.getEmail(),
                 signupRequest.getPhoneNumber(),
                 encoder.encode(signupRequest.getPassword()));
 

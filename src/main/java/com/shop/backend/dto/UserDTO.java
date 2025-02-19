@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;//유저정보를 담기 위한 객체
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,8 +29,6 @@ public class UserDTO {
     private Role role;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
-
-
 
 
 }
