@@ -1,9 +1,11 @@
 package com.shop.backend.security;
 
 import com.shop.backend.config.OAuth2LoginSuccessHandler;
+import com.shop.backend.models.Address;
 import com.shop.backend.models.AppRole;
 import com.shop.backend.models.Role;
 import com.shop.backend.models.User;
+import com.shop.backend.repository.AddressRepository;
 import com.shop.backend.repository.RoleRepository;
 import com.shop.backend.repository.UserRepository;
 import com.shop.backend.security.jwt.AuthEntryPointJwt;
@@ -42,6 +44,8 @@ public class SecurityConfig {
     @Autowired
     @Lazy
     private OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+    @Autowired
+    private AddressRepository addressRepository;
 
     //jwt 토큰 인증 필터
     @Bean
@@ -101,7 +105,8 @@ public class SecurityConfig {
                     .orElseGet(() -> roleRepository.save(new Role(AppRole.ROLE_ADMIN)));
 
             if (!userRepository.existsByUserName("user1")) {
-                User user1 = new User("user1", "user1@example.com","01045454545","58565", "양주로154", "119동 1602호", "중부동,대동황토방", passwordEncoder.encode("password1") );
+                User user1 = new User("user1", "user1@example.com","01045454545", passwordEncoder.encode("password1") );
+                Address address = new Address("12345", "Seoul", "Gangnam-gu", "Apt 101", null);
                 user1.setAccountNonLocked(false);
                 user1.setAccountNonExpired(true);
                 user1.setCredentialsNonExpired(true);
@@ -111,11 +116,17 @@ public class SecurityConfig {
                 user1.setTwoFactorEnabled(false);
                 user1.setSignUpMethod("email");
                 user1.setRole(userRole);
+                addressRepository.save(address);
                 userRepository.save(user1);
+
+
+
+
             }
 
             if (!userRepository.existsByUserName("admin")) {
-                User admin = new User("admin", "admin@example.com","010-4545-4544", "58575", "양주로154", "119동 1603호", "중부동,대동황토방",  passwordEncoder.encode("adminPass"));
+                User admin = new User("admin", "admin@example.com","010-4545-4544",  passwordEncoder.encode("adminPass"));
+                Address address = new Address("58575", "양주로154", "119동 1603호", "중부동,대동황토방", null);
                 admin.setAccountNonLocked(true);
                 admin.setAccountNonExpired(true);
                 admin.setCredentialsNonExpired(true);
@@ -125,6 +136,7 @@ public class SecurityConfig {
                 admin.setTwoFactorEnabled(false);
                 admin.setSignUpMethod("email");
                 admin.setRole(adminRole);
+                addressRepository.save(address);
                 userRepository.save(admin);
             }
         };
