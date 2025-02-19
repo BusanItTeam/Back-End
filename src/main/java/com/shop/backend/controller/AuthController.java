@@ -13,6 +13,7 @@ import com.shop.backend.security.request.SignupRequest;
 import com.shop.backend.security.response.LoginResponse;
 import com.shop.backend.security.response.MessageResponse;
 import com.shop.backend.security.response.UserInfoResponse;
+import com.shop.backend.security.services.UserDetailsImpl;
 import com.shop.backend.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,10 +31,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -61,10 +59,10 @@ public class AuthController {
     @PostMapping("/public/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
         Authentication authentication;
-        try{
+        try {
             authentication = authenticationManager
                     .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-        }catch (AuthenticationException exception){
+        } catch (AuthenticationException exception) {
             Map<String, Object> map = new HashMap<>();
             map.put("message", "Bad credentials");
             map.put("status", false);
@@ -72,31 +70,32 @@ public class AuthController {
         }
 
 
-            // 시큐리티 인증됨
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        // 시큐리티 인증됨
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // 인증된 유저디테일 가져옴
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        // 인증된 유저디테일 가져옴
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-            // 인증된 유저에 jwt 토큰 생성하기
-            String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
+        // 인증된 유저에 jwt 토큰 생성하기
+        String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
 
-            // 유저의 권한 리스트 가져오기
-            List<String> roles = userDetails.getAuthorities().stream()
-                    .map(item -> item.getAuthority())
-                    .collect(Collectors.toList());
+        // 유저의 권한 리스트 가져오기
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(item -> item.getAuthority())
+                .collect(Collectors.toList());
 
-            //유저이름 유저권한 jwt 토큰으로 새 객체를 만듬
-            LoginResponse response = new LoginResponse(userDetails.getUsername(),
-                    roles, jwtToken);
+        //유저이름 유저권한 jwt 토큰으로 새 객체를 만듬
+        LoginResponse response = new LoginResponse(userDetails.getUsername(),
+                roles, jwtToken);
 
-            // response body 로 JWT 토큰을 포함한 response 객체로 리턴
-            return ResponseEntity.ok(response);
+        // response body 로 JWT 토큰을 포함한 response 객체로 리턴
+        return ResponseEntity.ok(response);
 
     }
+
     //회원가입
     @PostMapping("/public/signup")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest){
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
         //유저네임 중복방지
         if (userRepository.existsByUserName(signupRequest.getUsername())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Username already exists"));
@@ -120,7 +119,7 @@ public class AuthController {
                     .orElseThrow(() -> new RuntimeException("Role not found"));
         } else {
             String roleStr = strRoles.iterator().next();
-            if(roleStr.equals("admin")) {
+            if (roleStr.equals("admin")) {
                 role = roleRepository.findByRoleName(AppRole.ROLE_ADMIN)
                         .orElseThrow(() -> new RuntimeException("Error: Role not found"));
             } else {
@@ -158,16 +157,24 @@ public class AuthController {
     @GetMapping("/user")
     //인증된 유저 정보 가져오기
     public ResponseEntity<?> getUserDetails(@AuthenticationPrincipal UserDetails userDetails) {
-        User user = userService.findByUsername(userDetails.getUsername());
 
+        User user = userService.findByUsername(userDetails.getUsername());
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
+        // 주소 정보 출력
+        for (Address address : user.getAddresses()) {  // List<Address> 타입으로 처리
+            System.out.println("어드레스: " + address.getId() + ", "
+                    + address.getPostcode() + ", "
+                    + address.getDetailAddress() + " ("
+                    + address.getExtraAddress() + ")");
+        }
 
         UserInfoResponse response = new UserInfoResponse(
                 user.getUserId(),
                 user.getUserName(),
                 user.getEmail(),
+                user.getPhoneNumber(),
                 user.isAccountNonLocked(),
                 user.isAccountNonExpired(),
                 user.isCredentialsNonExpired(),
@@ -186,4 +193,9 @@ public class AuthController {
     public String getUsername(Principal principal) {
         return principal.getName() != null ? principal.getName() : "";
     }
+
+
+
 }
+
+

@@ -61,6 +61,7 @@ public class SecurityConfig {
                 request
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") //@PreAuthorize("hasRole('ROLE_ADMIN')")같은 원리
                         .requestMatchers("/api/auths/public/**").permitAll()
+                        .requestMatchers("/api/cart/**").authenticated() // ✅ 로그인한 유저만 접근 가능
                         .requestMatchers("/oauth2/**").permitAll()
                         .anyRequest().authenticated())
                         .oauth2Login(oauth2 -> {

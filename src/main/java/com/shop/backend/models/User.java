@@ -81,6 +81,7 @@ public class User {
     private LocalDateTime updatedDate;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Address> addresses = new ArrayList<>();
 
     private boolean accountNonLocked = true;
@@ -126,12 +127,15 @@ public class User {
     }
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Order> orders;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Cart> cart;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Review> reviews;
 
 
@@ -139,4 +143,7 @@ public class User {
         addresses.add(address);
         address.setUser(this); // 양방향 관계 설정
     }
+
+
+
 }
