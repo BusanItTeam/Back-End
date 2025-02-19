@@ -1,5 +1,6 @@
 package com.shop.backend.security;
 
+import com.shop.backend.config.OAuth2LoginSuccessHandler;
 import com.shop.backend.models.AppRole;
 import com.shop.backend.models.Role;
 import com.shop.backend.models.User;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -36,6 +38,11 @@ public class SecurityConfig {
 
     @Autowired
     private CorsConfigurationSource corsConfigurationSource;
+
+    @Autowired
+    @Lazy
+    private OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+
     //jwt 토큰 인증 필터
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
@@ -50,9 +57,13 @@ public class SecurityConfig {
                 request
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") //@PreAuthorize("hasRole('ROLE_ADMIN')")같은 원리
                         .requestMatchers("/api/auths/public/**").permitAll()
+                        .requestMatchers("/oauth2/**").permitAll()
                         .requestMatchers("/api/mypage/**").authenticated() // mypage 엔드포인트는 인증된 사용자만 접근 가능
+                        .anyRequest().authenticated())
+                        .oauth2Login(oauth2 -> {
+                                oauth2.successHandler(oAuth2LoginSuccessHandler);
+                        });
 
-                        .anyRequest().authenticated());
         http.exceptionHandling(exception
                 -> exception.authenticationEntryPoint(unauthorizedHandler));
         http.addFilterBefore(authenticationJwtTokenFilter(),
