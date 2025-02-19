@@ -30,4 +30,5 @@ public class UserDTO {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
 
+
 }

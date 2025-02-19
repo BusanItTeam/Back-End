@@ -1,10 +1,12 @@
 package com.shop.backend.security.response;
 
+import com.shop.backend.models.Address;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -12,6 +14,7 @@ public class UserInfoResponse {
     private Long id;
     private String username;
     private String email;
+    private String phoneNumber;
     private boolean accountNonLocked;
     private boolean accountNonExpired;
     private boolean credentialsNonExpired;
@@ -22,12 +25,15 @@ public class UserInfoResponse {
     private List<String> roles;
 
 
-    public UserInfoResponse(Long id, String username, String email, boolean accountNonLocked, boolean accountNonExpired,
+
+
+    public UserInfoResponse(Long id, String username, String email, String phoneNumber, boolean accountNonLocked, boolean accountNonExpired,
                             boolean credentialsNonExpired, boolean enabled, LocalDate credentialsExpiryDate,
                             LocalDate accountExpiryDate, boolean isTwoFactorEnabled, List<String> roles) {
         this.id = id;
         this.username = username;
         this.email = email;
+        this.phoneNumber = phoneNumber;
         this.accountNonLocked = accountNonLocked;
         this.accountNonExpired = accountNonExpired;
         this.credentialsNonExpired = credentialsNonExpired;
@@ -36,5 +42,8 @@ public class UserInfoResponse {
         this.accountExpiryDate = accountExpiryDate;
         this.isTwoFactorEnabled = isTwoFactorEnabled;
         this.roles = roles;
+
+
     }
+
 }
