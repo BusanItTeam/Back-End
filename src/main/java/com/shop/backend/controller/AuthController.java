@@ -1,6 +1,7 @@
 package com.shop.backend.controller;
 
 
+import com.shop.backend.models.Address;
 import com.shop.backend.models.AppRole;
 import com.shop.backend.models.Role;
 import com.shop.backend.models.User;
@@ -105,45 +106,54 @@ public class AuthController {
             return ResponseEntity.badRequest().body(new MessageResponse("Email already exists"));
         }
 
-        //가입하기(일단 .. 유저네임 이메일, 패스워드만 머리아픔..)
+        // 유저 객체 생성 (일단 유저네임, 이메일, 패스워드만)
         User user = new User(signupRequest.getUsername(), signupRequest.getEmail(),
-                                signupRequest.getPhoneNumber(), signupRequest.getPostcode(),
-                                signupRequest.getAddress(), signupRequest.getDetailAddress(),
-                                signupRequest.getExtraAddress(),
+                signupRequest.getPhoneNumber(),
                 encoder.encode(signupRequest.getPassword()));
-        
-        //권한 리스트(시큐리티 유저 저장시 권한 리스트 필요)
+
+        // 권한 설정
         Set<String> strRoles = signupRequest.getRole();
         Role role;
-        
-        //클라이언트에서 문자열 "admin" 일 경우 관리가 권한 나머지는 유저권한
 
         if (strRoles == null || strRoles.isEmpty()) {
             role = roleRepository.findByRoleName(AppRole.ROLE_USER)
                     .orElseThrow(() -> new RuntimeException("Role not found"));
-        }else{
+        } else {
             String roleStr = strRoles.iterator().next();
-            if(roleStr.equals("admin")){
+            if(roleStr.equals("admin")) {
                 role = roleRepository.findByRoleName(AppRole.ROLE_ADMIN)
                         .orElseThrow(() -> new RuntimeException("Error: Role not found"));
-            }else{
+            } else {
                 role = roleRepository.findByRoleName(AppRole.ROLE_USER)
                         .orElseThrow(() -> new RuntimeException("Error: Role not found"));
             }
-
-            user.setAccountNonLocked(true);
-            user.setAccountNonExpired(true);
-            user.setCredentialsNonExpired(true);
-            user.setEnabled(true);
-            user.setCredentialsExpiryDate(LocalDate.now().plusYears(1));
-            user.setAccountExpiryDate(LocalDate.now().plusYears(1));
-            user.setTwoFactorEnabled(false);
-            user.setSignUpMethod("email"); //이메일 가입방법
         }
+
         user.setRole(role);
-        userRepository.save(user);
+        user.setAccountNonLocked(true);
+        user.setAccountNonExpired(true);
+        user.setCredentialsNonExpired(true);
+        user.setEnabled(true);
+        user.setCredentialsExpiryDate(LocalDate.now().plusYears(1));
+        user.setAccountExpiryDate(LocalDate.now().plusYears(1));
+        user.setTwoFactorEnabled(false);
+        user.setSignUpMethod("email"); // 이메일 가입
+
+        // 1. 먼저 User를 저장
+        User savedUser = userRepository.save(user);
+
+        // 2. Address를 User와 연결해서 저장
+        Address address = new Address(signupRequest.getPostcode(), signupRequest.getAddress(),
+                signupRequest.getDetailAddress(), signupRequest.getExtraAddress(), savedUser);
+
+        savedUser.addAddress(address); // 양방향 관계 설정
+
+        // 3. User를 다시 저장 (주소 포함)
+        userRepository.save(savedUser);
+
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
+
 
     @GetMapping("/user")
     //인증된 유저 정보 가져오기

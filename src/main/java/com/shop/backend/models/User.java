@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -65,14 +66,7 @@ public class User {
     private Role role;
 
 
-    @Column(length = 255)
-    private String postcode;
-    @Column(length = 255)
-    private String address;
-    @Column(length = 255)
-    private String detailAddress;
-    @Column(length = 255)
-    private String extraAddress;
+
 
 
 
@@ -86,6 +80,8 @@ public class User {
     @UpdateTimestamp
     private LocalDateTime updatedDate;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Address> addresses = new ArrayList<>();
 
     private boolean accountNonLocked = true;
     private boolean accountNonExpired = true;
@@ -99,14 +95,11 @@ public class User {
     private boolean isTwoFactorEnabled = false;
     private String signUpMethod;
 
-    public User(String userName, String email, String phoneNumber, String postcode, String address, String detailAddress, String extraAddress, String password) {
+    public User(String userName, String email, String phoneNumber,  String password) {
         this.userName = userName;
         this.email = email;
         this.phoneNumber = phoneNumber;
-        this.postcode = postcode;
-        this.address = address;
-        this.detailAddress = detailAddress;
-        this.extraAddress = extraAddress;
+        this.addresses = new ArrayList<>();
         this.password = password;
 
     }
@@ -142,4 +135,8 @@ public class User {
     private List<Review> reviews;
 
 
+    public void addAddress(Address address) {
+        addresses.add(address);
+        address.setUser(this); // 양방향 관계 설정
+    }
 }
