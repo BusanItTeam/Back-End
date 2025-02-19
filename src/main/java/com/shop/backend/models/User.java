@@ -2,6 +2,7 @@ package com.shop.backend.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -87,6 +88,7 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
+    @JsonManagedReference
     private List<Address> addresses = new ArrayList<>();
 
     private boolean accountNonLocked = true;
@@ -150,4 +152,6 @@ public class User {
         addresses.add(address);
         address.setUser(this); // 양방향 관계 설정
     }
+
+
 }
