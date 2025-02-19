@@ -2,6 +2,7 @@ package com.shop.backend.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -52,9 +53,10 @@ public class User {
 
     @Size(max = 120)
     @Column(name = "username")
-    @JsonIgnore
+    @JsonProperty("userName")
     private String userName;
     //사용자 이름
+
     @Column(nullable = false)
     private String name;
 
@@ -84,6 +86,7 @@ public class User {
     private LocalDateTime updatedDate;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Address> addresses = new ArrayList<>();
 
     private boolean accountNonLocked = true;
@@ -131,12 +134,15 @@ public class User {
     }
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Order> orders;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Cart> cart;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Review> reviews;
 
 
