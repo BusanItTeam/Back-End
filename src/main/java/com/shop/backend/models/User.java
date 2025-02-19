@@ -55,6 +55,9 @@ public class User {
     @JsonIgnore
     private String userName;
 
+    @Column(nullable = false)
+    private String name;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserGender gender = UserGender.UNKNOWN;
@@ -95,8 +98,9 @@ public class User {
     private boolean isTwoFactorEnabled = false;
     private String signUpMethod;
 
-    public User(String userName, String email, String phoneNumber,  String password) {
+    public User(String userName, String name, String email, String phoneNumber,  String password) {
         this.userName = userName;
+        this.name = name;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.addresses = new ArrayList<>();
@@ -108,6 +112,7 @@ public class User {
         this.userName = userName;
         this.email = email;
     }
+
 
 
 

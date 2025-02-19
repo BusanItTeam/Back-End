@@ -22,6 +22,9 @@ public class SignupRequest {
     @Email
     private String email; //이메일 최대 50자
 
+    @NotBlank
+    private String name;
+
     @Setter
     @Getter
     private Set<String> role; //권한 리스트
