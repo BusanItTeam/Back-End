@@ -63,6 +63,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") //@PreAuthorize("hasRole('ROLE_ADMIN')")같은 원리
                         .requestMatchers("/api/auths/public/**").permitAll()
                         .requestMatchers("/oauth2/**").permitAll()
+                        .requestMatchers("/api/mypage/**").authenticated() // mypage 엔드포인트는 인증된 사용자만 접근 가능
                         .anyRequest().authenticated())
                         .oauth2Login(oauth2 -> {
                                 oauth2.successHandler(oAuth2LoginSuccessHandler);
