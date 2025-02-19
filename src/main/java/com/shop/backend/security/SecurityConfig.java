@@ -44,6 +44,7 @@ public class SecurityConfig {
     @Autowired
     @Lazy
     private OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+
     @Autowired
     private AddressRepository addressRepository;
 
