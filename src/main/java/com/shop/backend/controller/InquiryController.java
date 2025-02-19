@@ -35,10 +35,12 @@ public class InquiryController {
         return ResponseEntity.ok(inquiries);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Inquiry> getInquiryById(@PathVariable Long id) {
-        Inquiry inquiry = inquiryService.getInquiryById(id);
-        return ResponseEntity.ok(inquiry);
+    @GetMapping("/user/{id}")
+    public ResponseEntity<List<Inquiry>> getInquiriesByUserId(@PathVariable Long id,
+                                                              @AuthenticationPrincipal UserDetails userDetails) {
+        // ID에 해당하는 유저의 문의 리스트를 가져옵니다.
+        List<Inquiry> inquiries = inquiryService.getInquiriesByUserId(id);
+        return ResponseEntity.ok(inquiries);
     }
 
     @PutMapping("/{id}")

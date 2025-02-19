@@ -5,6 +5,7 @@ import com.shop.backend.repository.InquiryRepository;
 import com.shop.backend.repository.UserRepository;
 import com.shop.backend.services.InquiryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,9 +33,18 @@ public class InquiryServiceImpl implements InquiryService {
     }
 
     @Override
-    public Inquiry getInquiryById(Long id) {
-        return inquiryRepository.findById(id)
+    public Inquiry getInquiryById(Long id, String username) {
+        Inquiry inquiry = inquiryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Inquiry not found"));
+
+        User user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!inquiry.getUser().equals(user)) {
+            throw new AccessDeniedException("You are not authorized to view this inquiry");
+        }
+
+        return inquiry;
     }
 
     @Override
@@ -48,6 +58,7 @@ public class InquiryServiceImpl implements InquiryService {
         if (!inquiry.getUser().equals(user)) {
             throw new RuntimeException("You are not authorized to update this inquiry");
         }
+
         inquiry.setType(inquiryDetails.getType());
         inquiry.setTitle(inquiryDetails.getTitle());
         inquiry.setContent(inquiryDetails.getContent());
@@ -68,5 +79,12 @@ public class InquiryServiceImpl implements InquiryService {
         }
 
         inquiryRepository.delete(inquiry);
+    }
+
+    @Override
+    public List<Inquiry> getInquiriesByUserId(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return inquiryRepository.findByUser(user);
     }
 }
