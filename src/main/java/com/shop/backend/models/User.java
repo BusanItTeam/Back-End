@@ -54,7 +54,7 @@ public class User {
     @Column(name = "username")
     @JsonIgnore
     private String userName;
-
+    //사용자 이름
     @Column(nullable = false)
     private String name;
 
