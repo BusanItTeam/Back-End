@@ -29,6 +29,7 @@ import java.util.List;
             @UniqueConstraint(columnNames = "email")
         })
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
@@ -87,7 +88,6 @@ public class User {
     private LocalDateTime updatedDate;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
     @JsonManagedReference
     private List<Address> addresses = new ArrayList<>();
 
