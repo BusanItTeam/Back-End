@@ -1,6 +1,7 @@
 package com.shop.backend.controller;
 
 import com.shop.backend.models.Inquiry;
+import com.shop.backend.models.User;
 import com.shop.backend.services.InquiryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -59,4 +60,5 @@ public class InquiryController {
         inquiryService.deleteInquiry(id, username);
         return ResponseEntity.ok().build();
     }
+
 }
