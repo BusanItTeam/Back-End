@@ -28,13 +28,12 @@ public class UserInfoResponse {
 
 
 
-    public UserInfoResponse(Long id, String username, String email, String phoneNumber, boolean accountNonLocked, boolean accountNonExpired,
+    public UserInfoResponse(Long id, String username, String email,  boolean accountNonLocked, boolean accountNonExpired,
                             boolean credentialsNonExpired, boolean enabled, LocalDate credentialsExpiryDate,
                             LocalDate accountExpiryDate, boolean isTwoFactorEnabled, List<String> roles, String name) {
         this.id = id;
         this.username = username;
         this.email = email;
-        this.phoneNumber = phoneNumber;
         this.accountNonLocked = accountNonLocked;
         this.accountNonExpired = accountNonExpired;
         this.credentialsNonExpired = credentialsNonExpired;
