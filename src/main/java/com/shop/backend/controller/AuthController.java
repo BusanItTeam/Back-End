@@ -182,7 +182,8 @@ public class AuthController {
                 user.getCredentialsExpiryDate(),
                 user.getAccountExpiryDate(),
                 user.isTwoFactorEnabled(),
-                roles
+                roles,
+                user.getName()
         );
 
         return ResponseEntity.ok().body(response);
