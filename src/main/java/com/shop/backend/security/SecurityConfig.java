@@ -65,6 +65,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/products/**").permitAll()
                                 .requestMatchers("/api/cart/**").authenticated()
                                 .requestMatchers("/oauth2/**").permitAll()
+                                .requestMatchers("/images/**").permitAll()
                                 .requestMatchers("/api/mypage/**").authenticated()
                                 .anyRequest().authenticated())
                 .oauth2Login(oauth2 -> {

@@ -1,11 +1,13 @@
 package com.shop.backend.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Entity
 @Data
@@ -38,6 +40,7 @@ public class Product {
     @Column(nullable = false)
     private Timestamp createdAt;
 
-    // @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    // private List<ProductAddImage> images; // 관계 제거
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<ProductAddImage> images; // 관계 추가
 }
