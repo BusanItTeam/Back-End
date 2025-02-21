@@ -1,4 +1,5 @@
 package com.shop.backend.dto;
+import com.shop.backend.models.Address;
 import com.shop.backend.models.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -16,7 +17,9 @@ import java.util.List;
 public class UserDTO {
     private Long userId;
     private String userName;
+    private String name;
     private String email;
+    private String phoneNumber;
     private boolean accountNonLocked;
     private boolean accountNonExpired;
     private boolean credentialsNonExpired;
@@ -29,5 +32,6 @@ public class UserDTO {
     private Role role;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private List<Address> addresses;
 
 }

@@ -57,6 +57,8 @@ public class AuthController {
     @Autowired
     UserService userService;
 
+
+
     //로그인 아 진짜 짜
     @PostMapping("/public/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
@@ -180,6 +182,7 @@ public class AuthController {
 
         return ResponseEntity.ok().body(response);
     }
+
 
     //인증된 유저 네임
     @GetMapping("/username")

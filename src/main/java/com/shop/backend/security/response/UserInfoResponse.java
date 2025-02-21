@@ -28,6 +28,7 @@ public class UserInfoResponse {
         this.id = id;
         this.username = username;
         this.email = email;
+
         this.accountNonLocked = accountNonLocked;
         this.accountNonExpired = accountNonExpired;
         this.credentialsNonExpired = credentialsNonExpired;

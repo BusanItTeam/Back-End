@@ -69,7 +69,9 @@ public class UserServiceImpl implements UserService {
         return new UserDTO(
                 user.getUserId(),
                 user.getUserName(),
+                user.getName(),
                 user.getEmail(),
+                user.getPhoneNumber(),
                 user.isAccountNonLocked(),
                 user.isAccountNonExpired(),
                 user.isCredentialsNonExpired(),
@@ -81,7 +83,8 @@ public class UserServiceImpl implements UserService {
                 user.getSignUpMethod(),
                 user.getRole(),
                 user.getCreatedDate(),
-                user.getUpdatedDate()
+                user.getUpdatedDate(),
+                user.getAddresses()
         );
     }
 }
