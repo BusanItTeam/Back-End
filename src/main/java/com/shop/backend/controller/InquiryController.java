@@ -1,6 +1,8 @@
 package com.shop.backend.controller;
 
+import com.shop.backend.dto.InquiryDTO; // DTO import 추가
 import com.shop.backend.models.Inquiry;
+import com.shop.backend.models.User;
 import com.shop.backend.services.InquiryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,34 +24,57 @@ public class InquiryController {
     }
 
     @PostMapping
-    public ResponseEntity<Inquiry> createInquiry(@RequestBody Inquiry inquiry,
-                                                 @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<InquiryDTO> createInquiry(@RequestBody InquiryDTO inquiryDTO,
+                                                    @AuthenticationPrincipal UserDetails userDetails) {
         String username = userDetails.getUsername();
-        Inquiry createdInquiry = inquiryService.createInquiry(inquiry, username);
-        return ResponseEntity.ok(createdInquiry);
+
+        // InquiryDTO를 Inquiry로 변환
+        Inquiry inquiry = new Inquiry();
+        inquiry.setType(inquiryDTO.getType());
+        inquiry.setTitle(inquiryDTO.getTitle());
+        inquiry.setContent(inquiryDTO.getContent());
+
+        Inquiry createdInquiry = inquiryService.createInquiry(inquiry, username); // Inquiry 객체를 사용
+
+        // Inquiry를 InquiryDTO로 변환
+        InquiryDTO responseDTO = convertToDTO(createdInquiry);
+        return ResponseEntity.ok(responseDTO);
     }
 
     @GetMapping
-    public ResponseEntity<List<Inquiry>> getAllInquiries() {
+    public ResponseEntity<List<InquiryDTO>> getAllInquiries() {
         List<Inquiry> inquiries = inquiryService.getAllInquiries();
-        return ResponseEntity.ok(inquiries);
+        List<InquiryDTO> inquiryDTOs = inquiries.stream()
+                .map(this::convertToDTO)
+                .toList();
+        return ResponseEntity.ok(inquiryDTOs);
     }
 
     @GetMapping("/user/{id}")
-    public ResponseEntity<List<Inquiry>> getInquiriesByUserId(@PathVariable Long id,
-                                                              @AuthenticationPrincipal UserDetails userDetails) {
-        // ID에 해당하는 유저의 문의 리스트를 가져옵니다.
+    public ResponseEntity<List<InquiryDTO>> getInquiriesByUserId(@PathVariable Long id,
+                                                                 @AuthenticationPrincipal UserDetails userDetails) {
         List<Inquiry> inquiries = inquiryService.getInquiriesByUserId(id);
-        return ResponseEntity.ok(inquiries);
+        List<InquiryDTO> inquiryDTOs = inquiries.stream()
+                .map(this::convertToDTO)
+                .toList();
+        return ResponseEntity.ok(inquiryDTOs);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Inquiry> updateInquiry(@PathVariable Long id,
-                                                 @RequestBody Inquiry inquiryDetails,
-                                                 @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<InquiryDTO> updateInquiry(@PathVariable Long id,
+                                                    @RequestBody InquiryDTO inquiryDTO,
+                                                    @AuthenticationPrincipal UserDetails userDetails) {
         String username = userDetails.getUsername();
-        Inquiry updatedInquiry = inquiryService.updateInquiry(id, inquiryDetails, username);
-        return ResponseEntity.ok(updatedInquiry);
+
+        // InquiryDTO를 Inquiry로 변환
+        Inquiry inquiryDetails = new Inquiry();
+        inquiryDetails.setType(inquiryDTO.getType());
+        inquiryDetails.setTitle(inquiryDTO.getTitle());
+        inquiryDetails.setContent(inquiryDTO.getContent());
+
+        Inquiry updatedInquiry = inquiryService.updateInquiry(id, inquiryDetails, username); // Inquiry 객체 사용
+        InquiryDTO responseDTO = convertToDTO(updatedInquiry);
+        return ResponseEntity.ok(responseDTO);
     }
 
     @DeleteMapping("/{id}")
@@ -58,5 +83,18 @@ public class InquiryController {
         String username = userDetails.getUsername();
         inquiryService.deleteInquiry(id, username);
         return ResponseEntity.ok().build();
+    }
+
+    private InquiryDTO convertToDTO(Inquiry inquiry) {
+        InquiryDTO inquiryDTO = new InquiryDTO();
+        inquiryDTO.setInquiryId(inquiry.getInquiryId());
+        inquiryDTO.setType(inquiry.getType());
+        inquiryDTO.setTitle(inquiry.getTitle());
+        inquiryDTO.setContent(inquiry.getContent());
+        inquiryDTO.setCreatedAt(inquiry.getCreatedAt());
+        inquiryDTO.setAnswer(inquiry.getAnswer());
+        inquiryDTO.setAnsweredAt(inquiry.getAnsweredAt());
+        inquiryDTO.setUserId(inquiry.getUser().getUserId()); // userId 설정
+        return inquiryDTO;
     }
 }
