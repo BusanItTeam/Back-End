@@ -1,4 +1,5 @@
 package com.shop.backend.services.impl;
+import com.shop.backend.dto.InquiryDTO; // DTO import 추가
 import com.shop.backend.models.Inquiry;
 import com.shop.backend.models.User;
 import com.shop.backend.repository.InquiryRepository;
@@ -29,7 +30,7 @@ public class InquiryServiceImpl implements InquiryService {
 
     @Override
     public List<Inquiry> getAllInquiries() {
-        return inquiryRepository.findAll();
+        return inquiryRepository.findAllWithUser(); // 이 메서드는 사용자 정보도 가져와야 함
     }
 
     @Override

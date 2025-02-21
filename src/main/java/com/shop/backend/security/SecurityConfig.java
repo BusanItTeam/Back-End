@@ -57,17 +57,20 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.cors(cors->cors.configurationSource(corsConfigurationSource));
-        http.csrf(AbstractHttpConfigurer::disable); //CSRF 중지 (post 는 csrf 토큰필요)
+        http.csrf(AbstractHttpConfigurer::disable);
         http.authorizeHttpRequests((request) ->
-                request
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN") //@PreAuthorize("hasRole('ROLE_ADMIN')")같은 원리
-                        .requestMatchers("/api/auths/public/**").permitAll()
-                        .requestMatchers("/oauth2/**").permitAll()
-                        .requestMatchers("/api/mypage/**").authenticated() // mypage 엔드포인트는 인증된 사용자만 접근 가능
-                        .anyRequest().authenticated())
-                        .oauth2Login(oauth2 -> {
-                                oauth2.successHandler(oAuth2LoginSuccessHandler);
-                        });
+                        request
+                                .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+                                .requestMatchers("/api/auths/public/**").permitAll()
+                                .requestMatchers("/api/products/**").permitAll()
+                                .requestMatchers("/api/cart/**").authenticated()
+                                .requestMatchers("/oauth2/**").permitAll()
+                                .requestMatchers("/images/**").permitAll()
+                                .requestMatchers("/api/mypage/**").authenticated()
+                                .anyRequest().authenticated())
+                .oauth2Login(oauth2 -> {
+                    oauth2.successHandler(oAuth2LoginSuccessHandler);
+                });
 
         http.exceptionHandling(exception
                 -> exception.authenticationEntryPoint(unauthorizedHandler));

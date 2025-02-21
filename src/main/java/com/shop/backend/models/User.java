@@ -60,7 +60,9 @@ public class User {
     //사용자 이름
 
     @Column(nullable = false)
+    @JsonProperty("name")  // ✅ JSON 응답에 name 필드 포함시키기
     private String name;
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

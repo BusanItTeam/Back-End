@@ -28,6 +28,7 @@ public class UserDetailsImpl implements UserDetails {
     private String username;
     @Getter
     private String email;
+    private String phoneNumber;
     
 
     @JsonIgnore
@@ -113,5 +114,9 @@ public class UserDetailsImpl implements UserDetails {
             return false;
         UserDetailsImpl user = (UserDetailsImpl) o;
         return Objects.equals(id, user.id);
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 }
