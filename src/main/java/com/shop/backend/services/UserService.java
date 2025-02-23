@@ -14,6 +14,8 @@ public interface UserService {
     //모든 유저 가져옴
     List<User> getAllUsers();
 
+    void deleteUser(Long id);
+
     //한명의 유저를 가져옴
     UserDTO getUserById(Long id);
 
