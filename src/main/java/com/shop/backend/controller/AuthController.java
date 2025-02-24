@@ -1,6 +1,7 @@
 package com.shop.backend.controller;
 
 
+import com.shop.backend.dto.AddressUpdateRequestDTO;
 import com.shop.backend.models.Address;
 import com.shop.backend.models.AppRole;
 import com.shop.backend.models.Role;
@@ -166,6 +167,9 @@ public class AuthController {
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
+
+
+
         UserInfoResponse response = new UserInfoResponse(
                 user.getUserId(),
                 user.getUserName(),
@@ -178,7 +182,11 @@ public class AuthController {
                 user.getAccountExpiryDate(),
                 user.isTwoFactorEnabled(),
                 roles,
+
+                user.getAddresses()
+
                 user.getName()
+
         );
 
         return ResponseEntity.ok().body(response);
@@ -190,6 +198,7 @@ public class AuthController {
     public String getUsername(Principal principal) {
         return principal.getName() != null ? principal.getName() : "";
     }
+
 
 
 

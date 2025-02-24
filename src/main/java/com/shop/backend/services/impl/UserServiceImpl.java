@@ -1,9 +1,11 @@
 package com.shop.backend.services.impl;
 
 import com.shop.backend.dto.UserDTO;
+import com.shop.backend.models.Address;
 import com.shop.backend.models.AppRole;
 import com.shop.backend.models.Role;
 import com.shop.backend.models.User;
+import com.shop.backend.repository.AddressRepository;
 import com.shop.backend.repository.RoleRepository;
 import com.shop.backend.repository.UserRepository;
 import com.shop.backend.services.UserService;
@@ -21,6 +23,8 @@ public class UserServiceImpl implements UserService {
     UserRepository userRepository;
     @Autowired
     RoleRepository roleRepository;
+    @Autowired
+    AddressRepository addressRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -98,4 +102,6 @@ public class UserServiceImpl implements UserService {
 
         );
     }
+
+
 }
