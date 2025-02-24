@@ -3,7 +3,9 @@ package com.shop.backend.models;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Data
@@ -15,15 +17,23 @@ public class Address {
     private Long id;
 
     @Column(length = 255, nullable = false)
+    @Getter
+    @Setter
     private String postcode;
 
     @Column(length = 255, nullable = false)
+    @Getter
+    @Setter
     private String address;
 
     @Column(length = 255)
+    @Getter
+    @Setter
     private String detailAddress;
 
     @Column(length = 255)
+    @Getter
+    @Setter
     private String extraAddress;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -23,15 +23,25 @@ public class UserInfoResponse {
     private LocalDate accountExpiryDate;
     private boolean isTwoFactorEnabled;
     private List<String> roles;
+
     private List<AddressResponse> addresses;
 
-    public UserInfoResponse(Long id, String username, String email, String phoneNumber, boolean accountNonLocked, boolean accountNonExpired,
+    private String name;
+
+
+
+
+
+    public UserInfoResponse(Long id, String username, String email,  boolean accountNonLocked, boolean accountNonExpired,
                             boolean credentialsNonExpired, boolean enabled, LocalDate credentialsExpiryDate,
+
                             LocalDate accountExpiryDate, boolean isTwoFactorEnabled, List<String> roles, List<Address> addresses) {
+
+                            LocalDate accountExpiryDate, boolean isTwoFactorEnabled, List<String> roles, String name) {
+
         this.id = id;
         this.username = username;
         this.email = email;
-        this.phoneNumber = phoneNumber;
         this.accountNonLocked = accountNonLocked;
         this.accountNonExpired = accountNonExpired;
         this.credentialsNonExpired = credentialsNonExpired;
@@ -41,6 +51,11 @@ public class UserInfoResponse {
         this.isTwoFactorEnabled = isTwoFactorEnabled;
         this.roles = roles;
         this.addresses = addresses.stream().map(AddressResponse::new).collect(Collectors.toList());
+
+        this.name = name;
+
+
+
     }
 
     @Getter

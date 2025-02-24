@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,6 +50,13 @@ public class UserServiceImpl implements UserService {
         return user.orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    @Override
+    public void deleteUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+        userRepository.delete(user);
+    }
+
 
     @Override
     public UserDTO getUserById(Long id) {
@@ -75,7 +81,9 @@ public class UserServiceImpl implements UserService {
         return new UserDTO(
                 user.getUserId(),
                 user.getUserName(),
+                user.getName(),
                 user.getEmail(),
+                user.getPhoneNumber(),
                 user.isAccountNonLocked(),
                 user.isAccountNonExpired(),
                 user.isCredentialsNonExpired(),
@@ -87,7 +95,10 @@ public class UserServiceImpl implements UserService {
                 user.getSignUpMethod(),
                 user.getRole(),
                 user.getCreatedDate(),
-                user.getUpdatedDate()
+                user.getUpdatedDate(),
+                user.getAddresses()
+
+
 
         );
     }
