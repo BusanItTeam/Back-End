@@ -21,6 +21,7 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/products")
@@ -77,15 +78,13 @@ public class ProductController {
                 productAddImageRepository.save(productAddImage); // ProductAddImageRepository를 사용하여 저장
             }
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct); // 201 Created 응답
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
         } catch (Exception e) {
-            // 예외 처리 로깅
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error 응답
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    // 이미지 저장 로직
     private String saveImage(MultipartFile image) throws IOException {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
         String timestamp = dateFormat.format(new Date());
@@ -93,33 +92,98 @@ public class ProductController {
         String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
         String fileName = timestamp + extension;
 
-        // 절대 경로 사용
         Path filePath = Paths.get(uploadPath + fileName);
         System.out.println("파일주소+filePath=" + filePath);
         try {
-            // 퍼블릭 폴더에 이미지 저장
             Files.copy(image.getInputStream(), filePath);
         } catch (IOException e) {
-            // 파일 저장 실패 시 로그 출력
             e.printStackTrace();
             throw new IOException("Failed to save image: " + fileName, e);
         }
 
-        // DB에 저장될 상대 경로 (리액트 public 폴더 기준)
         return "/images/" + fileName;
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product product) {
-        return productService.updateProduct(id, product)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Product> updateProduct(
+            @PathVariable Long id,
+            @RequestPart("name") String name,
+            @RequestPart("price") String price,
+            @RequestPart("stock") String stock,
+            @RequestPart("description") String description,
+            @RequestPart("categoryId") String categoryId,
+            @RequestPart(value = "imageUrl", required = false) MultipartFile imageUrl
+    ) throws IOException {
+        try {
+            Optional<Product> productOptional = productService.getProductById(id);
+            if (!productOptional.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Product existingProduct = productOptional.get();
+            existingProduct.setName(name);
+            existingProduct.setPrice(new BigDecimal(price));
+            existingProduct.setStock(Integer.parseInt(stock));
+            existingProduct.setDescription(description);
+
+            Category category = new Category();
+            category.setCategoryId(Long.parseLong(categoryId));
+            existingProduct.setCategory(category);
+
+            // Handle image update
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                // Delete existing image
+                if (existingProduct.getImageUrl() != null && !existingProduct.getImageUrl().isEmpty()) {
+                    try {
+                        Path fileToDelete = Paths.get(uploadPath, existingProduct.getImageUrl().substring(existingProduct.getImageUrl().lastIndexOf("/") + 1));
+                        Files.deleteIfExists(fileToDelete);
+                        System.out.println("Deleted file: " + fileToDelete.toString());
+                    } catch (IOException e) {
+                        System.err.println("Failed to delete file: " + e.getMessage());
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                    }
+                }
+
+                // Save new image
+                String imageUrlPath = saveImage(imageUrl);
+                existingProduct.setImageUrl(imageUrlPath);
+            }
+
+            Product updatedProduct = productService.saveProduct(existingProduct);
+            return ResponseEntity.ok(updatedProduct);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
-        return productService.deleteProduct(id)
-                ? ResponseEntity.ok().build()
-                : ResponseEntity.notFound().build();
+        Optional<Product> productOptional = productService.getProductById(id);
+        if (productOptional.isPresent()) {
+            Product product = productOptional.get();
+            String imageUrl = product.getImageUrl();
+
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                try {
+                    Path fileToDelete = Paths.get(uploadPath, imageUrl.substring(imageUrl.lastIndexOf("/") + 1));
+                    Files.deleteIfExists(fileToDelete);
+                    System.out.println("Deleted file: " + fileToDelete.toString());
+                } catch (IOException e) {
+                    System.err.println("Failed to delete file: " + e.getMessage());
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                }
+            }
+
+            boolean isDeleted = productService.deleteProduct(id);
+            if (isDeleted) {
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

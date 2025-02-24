@@ -29,8 +29,14 @@ public class ProductService {
                     existingProduct.setPrice(product.getPrice());
                     existingProduct.setImageUrl(product.getImageUrl());
                     existingProduct.setCategory(product.getCategory());
+                    existingProduct.setStock(product.getStock());
+                    existingProduct.setDescription(product.getDescription());
                     return productRepository.save(existingProduct);
                 });
+    }
+
+    public Optional<Product> getProductById(Long id) {
+        return productRepository.findById(id);
     }
 
     public boolean deleteProduct(Long id) {
