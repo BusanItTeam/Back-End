@@ -1,6 +1,7 @@
 package com.shop.backend.controller;
 
 
+import com.shop.backend.dto.AddressUpdateRequestDTO;
 import com.shop.backend.models.Address;
 import com.shop.backend.models.AppRole;
 import com.shop.backend.models.Role;
@@ -74,26 +75,26 @@ public class AuthController {
         }
 
 
-            // 시큐리티 인증됨
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        // 시큐리티 인증됨
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // 인증된 유저디테일 가져옴
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        // 인증된 유저디테일 가져옴
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-            // 인증된 유저에 jwt 토큰 생성하기
-            String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
+        // 인증된 유저에 jwt 토큰 생성하기
+        String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
 
-            // 유저의 권한 리스트 가져오기
-            List<String> roles = userDetails.getAuthorities().stream()
-                    .map(item -> item.getAuthority())
-                    .collect(Collectors.toList());
+        // 유저의 권한 리스트 가져오기
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(item -> item.getAuthority())
+                .collect(Collectors.toList());
 
-            //유저이름 유저권한 jwt 토큰으로 새 객체를 만듬
-            LoginResponse response = new LoginResponse(userDetails.getUsername(),
-                    roles, jwtToken);
+        //유저이름 유저권한 jwt 토큰으로 새 객체를 만듬
+        LoginResponse response = new LoginResponse(userDetails.getUsername(),
+                roles, jwtToken);
 
-            // response body 로 JWT 토큰을 포함한 response 객체로 리턴
-            return ResponseEntity.ok(response);
+        // response body 로 JWT 토큰을 포함한 response 객체로 리턴
+        return ResponseEntity.ok(response);
 
     }
     //회원가입
@@ -166,10 +167,15 @@ public class AuthController {
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
+
+
+
         UserInfoResponse response = new UserInfoResponse(
                 user.getUserId(),
                 user.getUserName(),
                 user.getEmail(),
+                user.getAddresses(),
+                user.getPhoneNumber(),
                 user.isAccountNonLocked(),
                 user.isAccountNonExpired(),
                 user.isCredentialsNonExpired(),
@@ -193,4 +199,9 @@ public class AuthController {
 
 
 
+
 }
+
+
+
+

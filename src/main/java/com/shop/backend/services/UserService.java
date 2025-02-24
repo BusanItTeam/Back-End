@@ -1,6 +1,7 @@
 package com.shop.backend.services;
 
 import com.shop.backend.dto.UserDTO;
+import com.shop.backend.models.Address;
 import com.shop.backend.models.User;
 
 import java.util.List;
@@ -26,6 +27,9 @@ public interface UserService {
     Optional<User> findByEmail(String email);
 
     User registerUser(User newUser);
+
+
+
 }
 
 
