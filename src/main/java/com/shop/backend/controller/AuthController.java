@@ -1,6 +1,7 @@
 package com.shop.backend.controller;
 
 
+import com.shop.backend.dto.AddressUpdateRequestDTO;
 import com.shop.backend.models.Address;
 import com.shop.backend.models.AppRole;
 import com.shop.backend.models.Role;
@@ -162,13 +163,7 @@ public class AuthController {
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
-        // 주소 정보 출력
-        for (Address address : user.getAddresses()) {  // List<Address> 타입으로 처리
-            System.out.println("어드레스: " + address.getId() + ", "
-                    + address.getPostcode() + ", "
-                    + address.getDetailAddress() + " ("
-                    + address.getExtraAddress() + ")");
-        }
+
 
         UserInfoResponse response = new UserInfoResponse(
                 user.getUserId(),
@@ -182,7 +177,8 @@ public class AuthController {
                 user.getCredentialsExpiryDate(),
                 user.getAccountExpiryDate(),
                 user.isTwoFactorEnabled(),
-                roles
+                roles,
+                user.getAddresses()
         );
 
         return ResponseEntity.ok().body(response);
@@ -193,6 +189,7 @@ public class AuthController {
     public String getUsername(Principal principal) {
         return principal.getName() != null ? principal.getName() : "";
     }
+
 
 
 
