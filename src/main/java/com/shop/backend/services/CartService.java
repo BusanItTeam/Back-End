@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-
 public class CartService {
 
     @Autowired
@@ -23,55 +22,71 @@ public class CartService {
     @Autowired
     private  ProductRepository productRepository;
 
-    public List<Cart> getUserCart(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public CartService(CartRepository cartRepository, UserRepository userRepository, ProductRepository productRepository) {
+        this.cartRepository = cartRepository;
+        this.userRepository = userRepository;
+        this.productRepository = productRepository;
+    }
+
+
+    // 카트목록 불러오기
+    public List<Cart> getCartByUser(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         return cartRepository.findByUser(user);
     }
 
 
-    public Cart addToCart(Long userId, Long productId, int quantity) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+  // 카트에 담기(추가)
+  // Add an item to the cart
+  public Cart addToCart(Long userId, Long productId, int quantity) {
+      User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+      Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found"));
 
-        Optional<Cart> existingCartItem = cartRepository.findByUser(user).stream()
-                .filter(cart -> cart.getProduct().getProductId().equals(productId))
-                .findFirst();
+      // Check if product already exists in the cart
+      List<Cart> existingCarts = cartRepository.findByUser(user);
+      for (Cart cart : existingCarts) {
+          if (cart.getProduct().getProductId().equals(productId)) {
+              cart.setQuantity(cart.getQuantity() + quantity);
+              return cartRepository.save(cart);
+          }
+      }
 
-        if (existingCartItem.isPresent()) {
-            Cart cart = existingCartItem.get();
-            cart.setQuantity(cart.getQuantity() + quantity);
-            return cartRepository.save(cart);
+      // 새롭게 추가
+      Cart cart = new Cart();
+      cart.setUser(user);
+      cart.setProduct(product);
+      cart.setQuantity(quantity);
+      return cartRepository.save(cart);
+  }
+
+    // 상품 낱개로 삭제
+    public void removeOneFromCart(Long userId, Long productId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found"));
+
+        List<Cart> cartItems = cartRepository.findByUser(user);
+
+        for (Cart cart : cartItems) {
+            if (cart.getProduct().getProductId().equals(productId)) {
+                if (cart.getQuantity() > 1) {
+                    cart.setQuantity(cart.getQuantity() - 1);
+                    cartRepository.save(cart);
+                } else {
+                    cartRepository.delete(cart);
+                }
+                return;
+            }
         }
-
-        Cart cart = new Cart();
-        cart.setUser(user);
-        cart.setProduct(product);
-        cart.setQuantity(quantity);
-
-        return cartRepository.save(cart);
+        throw new RuntimeException("Product not found in cart");
     }
 
-
-    public void removeFromCart(Long userId, Long cartId) {
-        Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found"));
-
-        // ✅ 본인의 장바구니 아이템인지 확인
-        if (!cart.getUser().getUserId().equals(userId)) {
-            throw new SecurityException("You are not authorized to remove this item");
-        }
-
-        cartRepository.deleteById(cartId);
-    }
-
-
+    // 장바구니 비우기
     public void clearCart(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        List<Cart> userCart = cartRepository.findByUser(user);
-        cartRepository.deleteAll(userCart);
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        List<Cart> cartItems = cartRepository.findByUser(user);
+
+        if (!cartItems.isEmpty()) {
+            cartRepository.deleteAll(cartItems);
+        }
     }
 }
