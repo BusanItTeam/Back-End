@@ -59,13 +59,12 @@ public class User {
     private String userName;
     //사용자 이름
 
-    @Column(nullable = false)
-    @JsonProperty("name")  // ✅ JSON 응답에 name 필드 포함시키기
+
+    @JsonProperty("name")  // JSON 응답에 name 필드 포함시키기
     private String name;
 
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private UserGender gender = UserGender.UNKNOWN;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE})
