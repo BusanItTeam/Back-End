@@ -21,7 +21,7 @@ public class Address {
     @Setter
     private String postcode;
 
-    @Column(length = 255, nullable = false)
+    @Column(length = 255)
     @Getter
     @Setter
     private String address;
