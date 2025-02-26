@@ -22,6 +22,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/products")
@@ -48,7 +50,7 @@ public class ProductController {
             @RequestPart("stock") String stock,
             @RequestPart("description") String description,
             @RequestPart("categoryId") String categoryId,
-            @RequestPart(value = "imageUrl", required = false) MultipartFile imageUrl
+            @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles
     ) throws IOException {
         try {
             Product product = new Product();
@@ -66,16 +68,17 @@ public class ProductController {
             Product savedProduct = productService.saveProduct(product);
 
             // 이미지 파일 처리
-            if (imageUrl != null && !imageUrl.isEmpty()) {
-                // 파일 저장 로직
-                String imageUrlPath = saveImage(imageUrl);
-                savedProduct.setImageUrl(imageUrlPath); // DB에 저장될 이미지 경로
-
-                // ProductAddImage 생성 및 저장
-                ProductAddImage productAddImage = new ProductAddImage();
-                productAddImage.setProduct(savedProduct); // 저장된 Product 연결
-                productAddImage.setImageUrl(imageUrlPath);
-                productAddImageRepository.save(productAddImage); // ProductAddImageRepository를 사용하여 저장
+            if (imageFiles != null && !imageFiles.isEmpty()) {
+                List<ProductAddImage> images = new ArrayList<>();
+                for (MultipartFile imageFile : imageFiles) {
+                    String imageUrlPath = saveImage(imageFile);
+                    ProductAddImage productAddImage = new ProductAddImage();
+                    productAddImage.setProduct(savedProduct); // 저장된 Product 연결
+                    productAddImage.setImageUrl(imageUrlPath);
+                    productAddImageRepository.save(productAddImage); // ProductAddImageRepository를 사용하여 저장
+                    images.add(productAddImage);
+                }
+                savedProduct.setImages(images);
             }
 
             return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
@@ -84,13 +87,11 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
     private String saveImage(MultipartFile image) throws IOException {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-        String timestamp = dateFormat.format(new Date());
+        String uniqueFileName = UUID.randomUUID().toString();
         String originalFilename = image.getOriginalFilename();
         String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        String fileName = timestamp + extension;
+        String fileName = uniqueFileName + extension;
 
         Path filePath = Paths.get(uploadPath + fileName);
         System.out.println("파일주소+filePath=" + filePath);
@@ -112,7 +113,7 @@ public class ProductController {
             @RequestPart("stock") String stock,
             @RequestPart("description") String description,
             @RequestPart("categoryId") String categoryId,
-            @RequestPart(value = "imageUrl", required = false) MultipartFile imageUrl
+            @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles
     ) throws IOException {
         try {
             Optional<Product> productOptional = productService.getProductById(id);
@@ -130,24 +131,37 @@ public class ProductController {
             category.setCategoryId(Long.parseLong(categoryId));
             existingProduct.setCategory(category);
 
-            // Handle image update
-            if (imageUrl != null && !imageUrl.isEmpty()) {
-                // Delete existing image
-                if (existingProduct.getImageUrl() != null && !existingProduct.getImageUrl().isEmpty()) {
-                    try {
-                        Path fileToDelete = Paths.get(uploadPath, existingProduct.getImageUrl().substring(existingProduct.getImageUrl().lastIndexOf("/") + 1));
-                        Files.deleteIfExists(fileToDelete);
-                        System.out.println("Deleted file: " + fileToDelete.toString());
-                    } catch (IOException e) {
-                        System.err.println("Failed to delete file: " + e.getMessage());
-                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            // 기존 이미지 삭제 로직 (선택적)
+            if (imageFiles != null && !imageFiles.isEmpty()) {
+                // 기존 이미지 파일 삭제
+                if (existingProduct.getImages() != null) {
+                    for (ProductAddImage productImage : existingProduct.getImages()) {
+                        try {
+                            Path fileToDelete = Paths.get(uploadPath, productImage.getImageUrl().substring(productImage.getImageUrl().lastIndexOf("/") + 1));
+                            Files.deleteIfExists(fileToDelete);
+                            productAddImageRepository.delete(productImage);
+                            System.out.println("Deleted file: " + fileToDelete.toString());
+                        } catch (IOException e) {
+                            System.err.println("Failed to delete file: " + e.getMessage());
+                            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                        }
                     }
+                    existingProduct.getImages().clear();
                 }
 
-                // Save new image
-                String imageUrlPath = saveImage(imageUrl);
-                existingProduct.setImageUrl(imageUrlPath);
+
+                List<ProductAddImage> images = new ArrayList<>();
+                for (MultipartFile imageFile : imageFiles) {
+                    String imageUrlPath = saveImage(imageFile);
+                    ProductAddImage productAddImage = new ProductAddImage();
+                    productAddImage.setProduct(existingProduct);
+                    productAddImage.setImageUrl(imageUrlPath);
+                    productAddImageRepository.save(productAddImage);
+                    images.add(productAddImage);
+                }
+                existingProduct.setImages(images);
             }
+
 
             Product updatedProduct = productService.saveProduct(existingProduct);
             return ResponseEntity.ok(updatedProduct);
@@ -163,16 +177,19 @@ public class ProductController {
         Optional<Product> productOptional = productService.getProductById(id);
         if (productOptional.isPresent()) {
             Product product = productOptional.get();
-            String imageUrl = product.getImageUrl();
 
-            if (imageUrl != null && !imageUrl.isEmpty()) {
-                try {
-                    Path fileToDelete = Paths.get(uploadPath, imageUrl.substring(imageUrl.lastIndexOf("/") + 1));
-                    Files.deleteIfExists(fileToDelete);
-                    System.out.println("Deleted file: " + fileToDelete.toString());
-                } catch (IOException e) {
-                    System.err.println("Failed to delete file: " + e.getMessage());
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            // 이미지 삭제
+            if (product.getImages() != null) {
+                for (ProductAddImage productImage : product.getImages()) {
+                    try {
+                        Path fileToDelete = Paths.get(uploadPath, productImage.getImageUrl().substring(productImage.getImageUrl().lastIndexOf("/") + 1));
+                        Files.deleteIfExists(fileToDelete);
+                        productAddImageRepository.delete(productImage);
+                        System.out.println("Deleted file: " + fileToDelete.toString());
+                    } catch (IOException e) {
+                        System.err.println("Failed to delete file: " + e.getMessage());
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                    }
                 }
             }
 

@@ -1,5 +1,6 @@
 package com.shop.backend.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -12,6 +13,7 @@ public class ProductAddImage {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
+    @JsonIgnore // 순환 참조 방지
     private Product product;
 
     @Column(nullable = false, length = 255)
