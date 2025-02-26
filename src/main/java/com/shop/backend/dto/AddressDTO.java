@@ -11,11 +11,15 @@ public class AddressDTO {
     private String address;
     private String detailAddress;
     private String extraAddress;
+    private String name;
+    private String phoneNumber;
 
     public AddressDTO(Address address) {
         this.postcode = address.getPostcode();
         this.address = address.getAddress();
         this.detailAddress = address.getDetailAddress();
         this.extraAddress = address.getExtraAddress();
+        this.name = getName();
+        this.phoneNumber = getPhoneNumber();
     }
 }

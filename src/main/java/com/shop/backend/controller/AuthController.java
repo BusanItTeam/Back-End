@@ -1,7 +1,8 @@
 package com.shop.backend.controller;
 
 
-import com.shop.backend.dto.AddressUpdateRequestDTO;
+import com.shop.backend.dto.AddressDTO;
+import com.shop.backend.dto.UserUpdateDTO;
 import com.shop.backend.models.Address;
 import com.shop.backend.models.AppRole;
 import com.shop.backend.models.Role;
@@ -19,6 +20,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -184,7 +186,9 @@ public class AuthController {
                 user.getAccountExpiryDate(),
                 user.isTwoFactorEnabled(),
                 roles,
-                user.getName()
+                user.getName(),
+                user.getCreatedDate()
+
         );
 
         return ResponseEntity.ok().body(response);
@@ -193,11 +197,36 @@ public class AuthController {
 
     //인증된 유저 네임
     @GetMapping("/username")
+    @PreAuthorize("isAuthenticated()")
     public String getUsername(Principal principal) {
         return principal.getName() != null ? principal.getName() : "";
     }
 
 
+    @PutMapping("/user")
+    public ResponseEntity<?> updateUserDetails(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody AddressDTO updateRequest) {
+
+        // 현재 로그인한 유저 정보 가져오기
+        User user = userService.findByUsername(userDetails.getUsername());
+        user.setName(updateRequest.getName());
+        user.setPhoneNumber(updateRequest.getPhoneNumber());
+
+
+        // 기존 주소 업데이트 (첫 번째 주소만 수정 가능)
+        if (user.getAddresses().size() > 0) {
+            Address address = user.getAddresses().get(0);
+            address.setPostcode(updateRequest.getPostcode());
+            address.setAddress(updateRequest.getAddress());
+            address.setDetailAddress(updateRequest.getDetailAddress());
+            address.setExtraAddress(updateRequest.getExtraAddress());
+        }
+
+        // 저장 후 응답 반환
+        userRepository.save(user);
+        return ResponseEntity.ok(new MessageResponse("정보가 성공적으로 수정되었습니다.!"));
+    }
 
 
 }
