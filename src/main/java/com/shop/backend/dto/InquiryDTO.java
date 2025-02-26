@@ -18,6 +18,7 @@ public class InquiryDTO {
     private Timestamp createdAt;
     private String answer;
     private Timestamp answeredAt;
+    private String name;
 
 
 }

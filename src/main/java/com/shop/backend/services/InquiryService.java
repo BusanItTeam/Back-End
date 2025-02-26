@@ -12,4 +12,5 @@ public interface InquiryService {
     void deleteInquiry(Long id, String username);
 
     List<Inquiry> getInquiriesByUserId(Long id);
+    Inquiry answerInquiry(Long id, String answer, String adminUsername);
 }
