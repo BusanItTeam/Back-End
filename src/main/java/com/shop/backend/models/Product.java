@@ -33,14 +33,14 @@ public class Product {
     @Column(nullable = false)
     private int stock;
 
-    @Column(length = 255)
-    private String imageUrl;
+    // 기존 imageUrl 필드 제거
+    // @Column(length = 255)
+    // private String imageUrl;
 
     @CreationTimestamp
     @Column(nullable = false)
     private Timestamp createdAt;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
     private List<ProductAddImage> images; // 관계 추가
 }
