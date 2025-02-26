@@ -95,6 +95,18 @@ public class InquiryController {
         inquiryDTO.setAnswer(inquiry.getAnswer());
         inquiryDTO.setAnsweredAt(inquiry.getAnsweredAt());
         inquiryDTO.setUserId(inquiry.getUser().getUserId()); // userId 설정
+        inquiryDTO.setName(inquiry.getUser().getName());
         return inquiryDTO;
     }
+
+    @PostMapping("/{id}/answer")
+    public ResponseEntity<InquiryDTO> answerInquiry(@PathVariable Long id,
+                                                    @RequestBody InquiryDTO inquiryDTO,
+                                                    @AuthenticationPrincipal UserDetails userDetails) {
+        String adminUsername = userDetails.getUsername();
+        Inquiry answeredInquiry = inquiryService.answerInquiry(id, inquiryDTO.getAnswer(), adminUsername);
+        InquiryDTO responseDTO = convertToDTO(answeredInquiry);
+        return ResponseEntity.ok(responseDTO);
+    }
+
 }
