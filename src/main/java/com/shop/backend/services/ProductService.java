@@ -27,7 +27,7 @@ public class ProductService {
                 .map(existingProduct -> {
                     existingProduct.setName(product.getName());
                     existingProduct.setPrice(product.getPrice());
-                    existingProduct.setImageUrl(product.getImageUrl());
+                    // existingProduct.setImageUrl(product.getImageUrl()); // 이 줄을 제거
                     existingProduct.setCategory(product.getCategory());
                     existingProduct.setStock(product.getStock());
                     existingProduct.setDescription(product.getDescription());
