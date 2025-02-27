@@ -14,8 +14,8 @@ public class ProductDTO {
 
     private Long productId;
 
-//    @ManyToOne(fetch = FetchType.EAGER)
-//    @JoinColumn(name = "category_id", nullable = false)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
     @Column(nullable = false, length = 255)

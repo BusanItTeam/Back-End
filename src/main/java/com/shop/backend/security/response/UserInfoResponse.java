@@ -5,6 +5,7 @@ import com.shop.backend.models.Address;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,11 +26,12 @@ public class UserInfoResponse {
     private boolean isTwoFactorEnabled;
     private List<String> roles;
     private String name;
+    private final LocalDateTime createdDate;
 
     public UserInfoResponse(Long id, String username, String email, List<Address> addresses, String phoneNumber,
                             boolean accountNonLocked, boolean accountNonExpired, boolean credentialsNonExpired,
                             boolean enabled, LocalDate credentialsExpiryDate, LocalDate accountExpiryDate,
-                            boolean isTwoFactorEnabled, List<String> roles, String name) {
+                            boolean isTwoFactorEnabled, List<String> roles, String name, LocalDateTime createdDate) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -44,6 +46,7 @@ public class UserInfoResponse {
         this.roles = roles;
         this.addresses = addresses.stream().map(AddressResponse::new).collect(Collectors.toList());
         this.name = name;
+        this.createdDate = createdDate;
     }
 
     @Getter

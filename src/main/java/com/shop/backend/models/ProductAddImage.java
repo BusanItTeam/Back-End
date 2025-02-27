@@ -13,7 +13,7 @@ public class ProductAddImage {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
-    @JsonIgnore // 순환 참조 방지
+    @JsonIgnore
     private Product product;
 
     @Column(nullable = false, length = 255)
