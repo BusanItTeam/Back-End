@@ -30,17 +30,13 @@ public class Product {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
-    @Column(nullable = false)
-    private int stock;
-
-    // 기존 imageUrl 필드 제거
-    // @Column(length = 255)
-    // private String imageUrl;
-
     @CreationTimestamp
     @Column(nullable = false)
     private Timestamp createdAt;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductAddImage> images; // 관계 추가
+    private List<ProductAddImage> images;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductOption> options;
 }
