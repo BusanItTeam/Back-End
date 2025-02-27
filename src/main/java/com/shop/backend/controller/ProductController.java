@@ -72,6 +72,7 @@ public class ProductController {
                     String imageUrlPath = saveImage(imageFile);
                     ProductAddImage productAddImage = new ProductAddImage();
                     productAddImage.setImageUrl(imageUrlPath);
+                    productAddImage.setProduct(product); // Product 설정!!!
                     images.add(productAddImage);
                 }
             }
@@ -178,9 +179,8 @@ public class ProductController {
                 for (MultipartFile imageFile : imageFiles) {
                     String imageUrlPath = saveImage(imageFile);
                     ProductAddImage productAddImage = new ProductAddImage();
-                    productAddImage.setProduct(existingProduct);
                     productAddImage.setImageUrl(imageUrlPath);
-                    productAddImageRepository.save(productAddImage);
+                    productAddImage.setProduct(existingProduct);
                     images.add(productAddImage);
                 }
                 existingProduct.setImages(images);
