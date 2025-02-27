@@ -18,7 +18,7 @@ public class Inventory {
     private int stock;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "option_id", nullable = false)
+    @JoinColumn(name = "option_id") //nullable = false
     @JsonIgnore
     private ProductOption option;
 }

@@ -10,8 +10,13 @@ import com.shop.backend.repository.ProductRepository;
 import com.shop.backend.repository.ProductAddImageRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +34,9 @@ public class ProductService {
 
     @Autowired
     private ProductAddImageRepository productAddImageRepository;
+
+    @Value("${file.upload.path}")
+    private String uploadPath;
 
     public List<Product> getAllProducts() {
         return productRepository.findAll();
@@ -65,8 +73,20 @@ public class ProductService {
                 productOptionRepository.delete(option);
             });
 
-            // Delete associated ProductAddImages
+            // Delete associated ProductAddImages and files
             product.getImages().forEach(productAddImage -> {
+                // 이미지 파일 삭제
+                String imageUrl = productAddImage.getImageUrl();
+                if (imageUrl != null && !imageUrl.isEmpty()) {
+                    try {
+                        Path fileToDelete = Paths.get(uploadPath, imageUrl.substring(imageUrl.lastIndexOf("/") + 1));
+                        Files.deleteIfExists(fileToDelete);
+                        System.out.println("Deleted file: " + fileToDelete.toString());
+                    } catch (IOException e) {
+                        System.err.println("Failed to delete file: " + e.getMessage());
+                        // 파일 삭제 실패 시, 예외를 던지지 않고 로그만 남기도록 처리
+                    }
+                }
                 productAddImageRepository.delete(productAddImage);
             });
 
