@@ -205,6 +205,22 @@ public class ProductController {
                 return ResponseEntity.notFound().build();
             }
 
+            Product product = productOptional.get();
+
+            // 이미지 파일 삭제 로직 추가
+            if (product.getImages() != null) {
+                for (ProductAddImage productImage : product.getImages()) {
+                    try {
+                        Path fileToDelete = Paths.get(uploadPath, productImage.getImageUrl().substring(productImage.getImageUrl().lastIndexOf("/") + 1));
+                        Files.deleteIfExists(fileToDelete);
+                        System.out.println("Deleted file: " + fileToDelete.toString());
+                    } catch (IOException e) {
+                        System.err.println("Failed to delete file: " + e.getMessage());
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                    }
+                }
+            }
+
             productService.deleteProduct(id);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
