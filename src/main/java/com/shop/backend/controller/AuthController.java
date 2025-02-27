@@ -228,6 +228,31 @@ public class AuthController {
         return ResponseEntity.ok(new MessageResponse("정보가 성공적으로 수정되었습니다.!"));
     }
 
+    //이메일로 보내기
+    @PostMapping("/public/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestParam String email) {
+        try{
+            userService.generatePasswordResetToken(email);
+            return ResponseEntity.ok(new MessageResponse("Password reset email sent!"));
+        }catch(Exception e){
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MessageResponse("Error sending password reset email"));
+        }
+    }
+
+    //리셋 토큰확인/ 패스워드 리셋
+    @PostMapping("/public/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestParam String token,
+                                           @RequestParam String newPassword) {
+        try{
+            userService.resetPassword(token, newPassword);
+            return ResponseEntity.ok(new MessageResponse("패스워드 초기화 완료"));
+        }catch (RuntimeException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new MessageResponse(e.getMessage()));
+        }
+    }
 
 }
 

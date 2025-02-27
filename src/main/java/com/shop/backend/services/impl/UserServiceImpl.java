@@ -1,20 +1,23 @@
 package com.shop.backend.services.impl;
 
 import com.shop.backend.dto.UserDTO;
-import com.shop.backend.models.Address;
-import com.shop.backend.models.AppRole;
-import com.shop.backend.models.Role;
-import com.shop.backend.models.User;
+import com.shop.backend.models.*;
 import com.shop.backend.repository.AddressRepository;
+import com.shop.backend.repository.PasswordResetTokenRepository;
 import com.shop.backend.repository.RoleRepository;
 import com.shop.backend.repository.UserRepository;
 import com.shop.backend.services.UserService;
+import com.shop.backend.util.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -27,6 +30,13 @@ public class UserServiceImpl implements UserService {
     AddressRepository addressRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    EmailService emailService;
+
+    @Value("${frontend.url}")
+    String frontendUrl;
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Override
     public void updateUserRole(Long userId, String roleName) {
@@ -97,10 +107,41 @@ public class UserServiceImpl implements UserService {
                 user.getCreatedDate(),
                 user.getUpdatedDate(),
                 user.getAddresses()
-
-
-
         );
+    }
+
+    @Override
+    public void generatePasswordResetToken(String email){
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("유저를 찾지 못했습니다."));
+
+        String token = UUID.randomUUID().toString();
+        Instant expiry = Instant.now().plus(24, ChronoUnit.HOURS);
+        PasswordResetToken resetToken = new PasswordResetToken(token, expiry, user);
+        passwordResetTokenRepository.save(resetToken);
+
+        String resetUrl = frontendUrl + "/reset-password?token=" + token;
+
+        //이메일 보내기
+        emailService.sendPasswordResetEmail(user.getEmail(), resetUrl);
+    }
+
+    @Override
+    public void resetPassword(String token, String newPassword) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid password reset token"));
+
+        if(resetToken.isUsed())
+            throw new RuntimeException("Password reset token has already been used");
+        if(resetToken.getExpiryDate().isBefore(Instant.now()))
+            throw new RuntimeException("Password reset token has expired");
+
+        User user = resetToken.getUser();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        resetToken.setUsed(true);
+        passwordResetTokenRepository.save(resetToken);
     }
 
 
