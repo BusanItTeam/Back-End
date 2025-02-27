@@ -29,7 +29,9 @@ public interface UserService {
     User registerUser(User newUser);
 
 
+    void generatePasswordResetToken(String email);
 
+    void resetPassword(String token, String newPassword);
 }
 
 
