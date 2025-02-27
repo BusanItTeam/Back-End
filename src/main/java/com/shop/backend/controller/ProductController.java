@@ -1,8 +1,9 @@
 package com.shop.backend.controller;
 
-import com.shop.backend.models.Category;
-import com.shop.backend.models.Product;
-import com.shop.backend.models.ProductAddImage;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.shop.backend.models.*;
+import com.shop.backend.repository.CategoryRepository;
 import com.shop.backend.repository.ProductAddImageRepository;
 import com.shop.backend.services.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +19,8 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.ArrayList;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/products")
@@ -34,6 +31,9 @@ public class ProductController {
 
     @Autowired
     private ProductAddImageRepository productAddImageRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @Value("${file.upload.path}")
     private String uploadPath;
@@ -47,46 +47,68 @@ public class ProductController {
     public ResponseEntity<Product> addProduct(
             @RequestPart("name") String name,
             @RequestPart("price") String price,
-            @RequestPart("stock") String stock,
             @RequestPart("description") String description,
             @RequestPart("categoryId") String categoryId,
-            @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles
+            @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles,
+            @RequestPart("options") String optionsJson // JSON array of options
     ) throws IOException {
         try {
+            Optional<Category> categoryOptional = categoryRepository.findById(Long.parseLong(categoryId));
+            if (!categoryOptional.isPresent()) {
+                return ResponseEntity.badRequest().build();
+            }
+
             Product product = new Product();
             product.setName(name);
             product.setDescription(description);
             product.setPrice(new BigDecimal(price));
-            product.setStock(Integer.parseInt(stock));
 
-            // 카테고리 설정
-            Category category = new Category();
-            category.setCategoryId(Long.parseLong(categoryId));
+            Category category = categoryOptional.get();
             product.setCategory(category);
 
-            // Product 먼저 저장
-            Product savedProduct = productService.saveProduct(product);
-
-            // 이미지 파일 처리
+            List<ProductAddImage> images = new ArrayList<>();
             if (imageFiles != null && !imageFiles.isEmpty()) {
-                List<ProductAddImage> images = new ArrayList<>();
                 for (MultipartFile imageFile : imageFiles) {
                     String imageUrlPath = saveImage(imageFile);
                     ProductAddImage productAddImage = new ProductAddImage();
-                    productAddImage.setProduct(savedProduct); // 저장된 Product 연결
                     productAddImage.setImageUrl(imageUrlPath);
-                    productAddImageRepository.save(productAddImage); // ProductAddImageRepository를 사용하여 저장
                     images.add(productAddImage);
                 }
-                savedProduct.setImages(images);
             }
+            product.setImages(images);
 
+            List<ProductOption> options = parseOptions(optionsJson, product);
+            product.setOptions(options);
+
+            Product savedProduct = productService.addProductWithOptions(product, options);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    private List<ProductOption> parseOptions(String optionsJson, Product product) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<Map<String, Object>> optionsList = objectMapper.readValue(optionsJson, new TypeReference<List<Map<String, Object>>>() {});
+
+        List<ProductOption> options = new ArrayList<>();
+        for (Map<String, Object> optionMap : optionsList) {
+            ProductOption option = new ProductOption();
+            option.setProduct(product);
+            option.setColor((String) optionMap.get("color"));
+            option.setSize((String) optionMap.get("size"));
+
+            Inventory inventory = new Inventory();
+            inventory.setStock(Integer.parseInt(String.valueOf(optionMap.get("stock"))));
+            option.setInventory(inventory);
+
+            options.add(option);
+        }
+
+        return options;
+    }
+
     private String saveImage(MultipartFile image) throws IOException {
         String uniqueFileName = UUID.randomUUID().toString();
         String originalFilename = image.getOriginalFilename();
@@ -110,12 +132,17 @@ public class ProductController {
             @PathVariable Long id,
             @RequestPart("name") String name,
             @RequestPart("price") String price,
-            @RequestPart("stock") String stock,
             @RequestPart("description") String description,
             @RequestPart("categoryId") String categoryId,
-            @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles
+            @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles,
+            @RequestPart("options") String optionsJson
     ) throws IOException {
         try {
+            Optional<Category> categoryOptional = categoryRepository.findById(Long.parseLong(categoryId));
+            if (!categoryOptional.isPresent()) {
+                return ResponseEntity.badRequest().build();
+            }
+
             Optional<Product> productOptional = productService.getProductById(id);
             if (!productOptional.isPresent()) {
                 return ResponseEntity.notFound().build();
@@ -123,12 +150,10 @@ public class ProductController {
 
             Product existingProduct = productOptional.get();
             existingProduct.setName(name);
-            existingProduct.setPrice(new BigDecimal(price));
-            existingProduct.setStock(Integer.parseInt(stock));
             existingProduct.setDescription(description);
+            existingProduct.setPrice(new BigDecimal(price));
 
-            Category category = new Category();
-            category.setCategoryId(Long.parseLong(categoryId));
+            Category category = categoryOptional.get();
             existingProduct.setCategory(category);
 
             // 기존 이미지 삭제 로직 (선택적)
@@ -149,7 +174,6 @@ public class ProductController {
                     existingProduct.getImages().clear();
                 }
 
-
                 List<ProductAddImage> images = new ArrayList<>();
                 for (MultipartFile imageFile : imageFiles) {
                     String imageUrlPath = saveImage(imageFile);
@@ -162,10 +186,11 @@ public class ProductController {
                 existingProduct.setImages(images);
             }
 
+            List<ProductOption> options = parseOptions(optionsJson, existingProduct);
+            existingProduct.setOptions(options);
 
             Product updatedProduct = productService.saveProduct(existingProduct);
             return ResponseEntity.ok(updatedProduct);
-
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -174,33 +199,17 @@ public class ProductController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
-        Optional<Product> productOptional = productService.getProductById(id);
-        if (productOptional.isPresent()) {
-            Product product = productOptional.get();
-
-            // 이미지 삭제
-            if (product.getImages() != null) {
-                for (ProductAddImage productImage : product.getImages()) {
-                    try {
-                        Path fileToDelete = Paths.get(uploadPath, productImage.getImageUrl().substring(productImage.getImageUrl().lastIndexOf("/") + 1));
-                        Files.deleteIfExists(fileToDelete);
-                        productAddImageRepository.delete(productImage);
-                        System.out.println("Deleted file: " + fileToDelete.toString());
-                    } catch (IOException e) {
-                        System.err.println("Failed to delete file: " + e.getMessage());
-                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-                    }
-                }
-            }
-
-            boolean isDeleted = productService.deleteProduct(id);
-            if (isDeleted) {
-                return ResponseEntity.ok().build();
-            } else {
+        try {
+            Optional<Product> productOptional = productService.getProductById(id);
+            if (!productOptional.isPresent()) {
                 return ResponseEntity.notFound().build();
             }
-        } else {
-            return ResponseEntity.notFound().build();
+
+            productService.deleteProduct(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }
