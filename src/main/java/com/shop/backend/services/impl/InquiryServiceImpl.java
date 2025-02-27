@@ -88,4 +88,25 @@ public class InquiryServiceImpl implements InquiryService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return inquiryRepository.findByUser(user);
     }
+
+    @Override
+    public Inquiry answerInquiry(Long id, String answer, String adminUsername) {
+        Inquiry inquiry = inquiryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Inquiry not found"));
+
+        // 관리자 권한 확인 (실제 구현은 프로젝트의 인증/인가 방식에 따라 다를 수 있습니다)
+        if (!isAdmin(adminUsername)) {
+            throw new AccessDeniedException("Only admins can answer inquiries");
+        }
+
+        inquiry.setAnswer(answer);
+        return inquiryRepository.save(inquiry);
+    }
+
+    private boolean isAdmin(String username) {
+        // 관리자 확인 로직 구현
+        // 예: 사용자의 역할을 확인하거나, 관리자 목록을 확인하는 등의 로직
+        return true; // 임시로 모든 사용자를 관리자로 취급
+    }
+
 }
