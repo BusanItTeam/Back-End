@@ -50,7 +50,8 @@ public class ProductController {
             @RequestPart("description") String description,
             @RequestPart("categoryId") String categoryId,
             @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles,
-            @RequestPart("options") String optionsJson // JSON array of options
+            @RequestPart("options") String optionsJson, // JSON array of options
+            @RequestPart(value = "discountRate", required = false) String discountRate // 할인율 추가
     ) throws IOException {
         try {
             Optional<Category> categoryOptional = categoryRepository.findById(Long.parseLong(categoryId));
@@ -62,6 +63,13 @@ public class ProductController {
             product.setName(name);
             product.setDescription(description);
             product.setPrice(new BigDecimal(price));
+
+            // 할인율 설정
+            if (discountRate != null && !discountRate.isEmpty()) {
+                product.setDiscountRate(new BigDecimal(discountRate));
+            } else {
+                product.setDiscountRate(null); // or BigDecimal.ZERO if you prefer
+            }
 
             Category category = categoryOptional.get();
             product.setCategory(category);
@@ -136,7 +144,8 @@ public class ProductController {
             @RequestPart("description") String description,
             @RequestPart("categoryId") String categoryId,
             @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles,
-            @RequestPart("options") String optionsJson
+            @RequestPart("options") String optionsJson,
+            @RequestPart(value = "discountRate", required = false) String discountRate // 할인율 추가
     ) throws IOException {
         try {
             Optional<Category> categoryOptional = categoryRepository.findById(Long.parseLong(categoryId));
@@ -149,6 +158,13 @@ public class ProductController {
             updatedProduct.setName(name);
             updatedProduct.setDescription(description);
             updatedProduct.setPrice(new BigDecimal(price));
+
+            // 할인율 설정
+            if (discountRate != null && !discountRate.isEmpty()) {
+                updatedProduct.setDiscountRate(new BigDecimal(discountRate));
+            } else {
+                updatedProduct.setDiscountRate(null); // or BigDecimal.ZERO if you prefer
+            }
 
             Category category = categoryOptional.get();
             updatedProduct.setCategory(category);
@@ -178,7 +194,6 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
