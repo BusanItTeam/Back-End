@@ -59,6 +59,7 @@ public class ProductService {
         existingProduct.setPrice(updatedProduct.getPrice());
         existingProduct.setDescription(updatedProduct.getDescription());
         existingProduct.setCategory(updatedProduct.getCategory());
+        existingProduct.setDiscountRate(updatedProduct.getDiscountRate()); // 할인율 업데이트
 
         // 3. 기존 ProductAddImage 삭제 후 새로운 ProductAddImage 추가
         // 기존 이미지 삭제
