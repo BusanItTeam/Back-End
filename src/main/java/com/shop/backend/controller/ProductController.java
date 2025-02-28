@@ -144,58 +144,41 @@ public class ProductController {
                 return ResponseEntity.badRequest().build();
             }
 
-            Optional<Product> productOptional = productService.getProductById(id);
-            if (!productOptional.isPresent()) {
-                return ResponseEntity.notFound().build();
-            }
-
-            Product existingProduct = productOptional.get();
-            existingProduct.setName(name);
-            existingProduct.setDescription(description);
-            existingProduct.setPrice(new BigDecimal(price));
+            // 1. 업데이트할 Product 생성 및 정보 설정
+            Product updatedProduct = new Product();
+            updatedProduct.setName(name);
+            updatedProduct.setDescription(description);
+            updatedProduct.setPrice(new BigDecimal(price));
 
             Category category = categoryOptional.get();
-            existingProduct.setCategory(category);
+            updatedProduct.setCategory(category);
 
-            // 기존 이미지 삭제 로직 (선택적)
+            // 2. 업데이트할 ProductOption 생성 및 정보 설정
+            List<ProductOption> updatedOptions = parseOptions(optionsJson, updatedProduct);
+
+            // 3. 업데이트할 ProductAddImage 생성 및 정보 설정
+            List<ProductAddImage> updatedImages = new ArrayList<>();
             if (imageFiles != null && !imageFiles.isEmpty()) {
-                // 기존 이미지 파일 삭제
-                if (existingProduct.getImages() != null) {
-                    for (ProductAddImage productImage : existingProduct.getImages()) {
-                        try {
-                            Path fileToDelete = Paths.get(uploadPath, productImage.getImageUrl().substring(productImage.getImageUrl().lastIndexOf("/") + 1));
-                            Files.deleteIfExists(fileToDelete);
-                            productAddImageRepository.delete(productImage);
-                            System.out.println("Deleted file: " + fileToDelete.toString());
-                        } catch (IOException e) {
-                            System.err.println("Failed to delete file: " + e.getMessage());
-                            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-                        }
-                    }
-                    existingProduct.getImages().clear();
-                }
-
-                List<ProductAddImage> images = new ArrayList<>();
                 for (MultipartFile imageFile : imageFiles) {
                     String imageUrlPath = saveImage(imageFile);
                     ProductAddImage productAddImage = new ProductAddImage();
                     productAddImage.setImageUrl(imageUrlPath);
-                    productAddImage.setProduct(existingProduct);
-                    images.add(productAddImage);
+                    productAddImage.setProduct(updatedProduct);
+                    updatedImages.add(productAddImage);
                 }
-                existingProduct.setImages(images);
             }
 
-            List<ProductOption> options = parseOptions(optionsJson, existingProduct);
-            existingProduct.setOptions(options);
+            // 4. ProductService를 통해 업데이트 수행
+            Product updatedProductResult = productService.updateProduct(id, updatedProduct, updatedOptions, updatedImages);
 
-            Product updatedProduct = productService.saveProduct(existingProduct);
-            return ResponseEntity.ok(updatedProduct);
+            return ResponseEntity.ok(updatedProductResult);
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
