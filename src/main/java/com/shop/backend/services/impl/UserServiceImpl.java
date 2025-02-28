@@ -2,10 +2,7 @@ package com.shop.backend.services.impl;
 
 import com.shop.backend.dto.UserDTO;
 import com.shop.backend.models.*;
-import com.shop.backend.repository.AddressRepository;
-import com.shop.backend.repository.PasswordResetTokenRepository;
-import com.shop.backend.repository.RoleRepository;
-import com.shop.backend.repository.UserRepository;
+import com.shop.backend.repository.*;
 import com.shop.backend.services.UserService;
 import com.shop.backend.util.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +14,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -37,6 +35,9 @@ public class UserServiceImpl implements UserService {
     String frontendUrl;
     @Autowired
     private PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Autowired
+    private EmailRepository emailRepository;
 
     @Override
     public void updateUserRole(Long userId, String roleName) {
@@ -143,6 +144,55 @@ public class UserServiceImpl implements UserService {
         resetToken.setUsed(true);
         passwordResetTokenRepository.save(resetToken);
     }
+
+
+    @Override
+    public void generateEmailResetToken(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("이메일을 찾을 수 없습니다."));
+
+        String verificationCode = generateVerificationCode();
+        Instant expiryDate = Instant.now().plus(10, ChronoUnit.MINUTES);
+        EmailToken emailToken = new EmailToken(verificationCode, expiryDate, user);
+        emailRepository.save(emailToken);
+
+        emailService.sendEmailReset(user.getEmail(), "이메일 인증번호: " + verificationCode);
+    }
+
+    @Override
+    public boolean verifyEmailCode(String email, String code) {
+        return false;
+    }
+
+
+    //   6자리 인증 숫자 생성
+    private String generateVerificationCode() {
+        Random random = new Random();
+        int code = 100000 + random.nextInt(900000); // 100000 ~ 999999 범위
+        return String.valueOf(code);
+    }
+
+
+
+    @Override
+    public void resetEmail(String token, String newEmail){
+        EmailToken emailToken = emailRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid Email reset Token"));
+
+        if(emailToken.isUsed())
+            throw new RuntimeException("Email reset token has already been used");
+        if (emailToken.getExpiryDate().isBefore(Instant.now()))
+            throw new RuntimeException("Email reset token has expired");
+
+        User user = emailToken.getUser();
+        user.setEmail(newEmail);
+        userRepository.save(user);
+
+        emailToken.setUsed(true);
+        emailRepository.save(emailToken);
+    }
+
+
 
 
 }

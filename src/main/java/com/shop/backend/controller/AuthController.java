@@ -254,6 +254,49 @@ public class AuthController {
         }
     }
 
+    //이메일 검증
+    @PostMapping("/public/verify-email-code")
+    public ResponseEntity<?> verifyEmailCode(@RequestParam String email, @RequestParam String code) {
+        try {
+            boolean isVerified = userService.verifyEmailCode(email, code);
+            if (isVerified) {
+                return ResponseEntity.ok().body(new MessageResponse("이메일 인증 성공!"));
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("잘못된 인증번호입니다."));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("이메일 인증 중 오류 발생"));
+        }
+    }
+
+
+    @PostMapping("/public/send-email")
+    public ResponseEntity<?> successEmail(@RequestParam String email) {
+        try{
+            userService.generateEmailResetToken(email);
+            return ResponseEntity.ok(new MessageResponse("Eamil reset email sent!"));
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MessageResponse("Error sending password reset email"));
+        }
+    }
+
+
+    @PostMapping("/public/reset-email")
+    public ResponseEntity<?> resetEmail(@RequestParam String token,
+                                        @RequestParam String newEmail) {
+        try{
+            userService.resetPassword(token, newEmail);
+            return ResponseEntity.ok(new MessageResponse("Email reset successful"));
+        }catch (RuntimeException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new MessageResponse(e.getMessage()));
+        }
+    }
+
+
 }
 
 
