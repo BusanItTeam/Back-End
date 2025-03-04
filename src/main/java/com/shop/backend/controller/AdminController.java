@@ -3,12 +3,14 @@ package com.shop.backend.controller;
 import com.shop.backend.dto.UserDTO;
 import com.shop.backend.models.Role;
 import com.shop.backend.models.User;
+import com.shop.backend.repository.PasswordResetTokenRepository;
 import com.shop.backend.repository.UserRepository;
 import com.shop.backend.security.response.MessageResponse;
 import com.shop.backend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,7 +24,8 @@ public class AdminController {
 
     @Autowired
     UserRepository userRepository;
-
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
 
 
     @GetMapping("/getusers")
@@ -45,7 +48,10 @@ public class AdminController {
 
     //유저 삭제
     @DeleteMapping("/user/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+
+        passwordResetTokenRepository.deleteById(id);
         userService.deleteUser(id);
 
         return ResponseEntity.ok().body(new MessageResponse("유저를 성공적으로 삭제하였습니다."));
