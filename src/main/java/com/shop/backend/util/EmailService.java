@@ -18,4 +18,12 @@ public class EmailService {
         message.setText("Your password is: " + resetUrl);
         mailSender.send(message);
     }
+    
+    public void sendEmailReset(String to, String s) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject("회원가입 이메일 인증");
+        message.setText(s);
+        mailSender.send(message);
+    }
 }
