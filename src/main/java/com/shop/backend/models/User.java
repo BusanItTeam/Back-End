@@ -51,7 +51,8 @@ public class User {
     @JsonIgnore
     private String password;
 
-
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<PasswordResetToken> passwordResetTokens;
 
     @Size(max = 120)
     @Column(name = "username")
