@@ -80,7 +80,7 @@ public class User {
 
 
     @Column(precision = 10, scale = 2)
-    private BigDecimal points;
+    private int points;
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -92,6 +92,12 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Address> addresses = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<PointHistory> pointHistories = new ArrayList<>();
+
+
 
     private boolean accountNonLocked = true;
     private boolean accountNonExpired = true;
@@ -112,6 +118,16 @@ public class User {
         this.phoneNumber = phoneNumber;
         this.addresses = new ArrayList<>();
         this.password = password;
+    }
+
+    public User(String userName, String name, String email, String phoneNumber,  int points, String password) {
+        this.userName = userName;
+        this.name = name;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.addresses = new ArrayList<>();
+        this.points = points;
+        this.password = password;
 
     }
 
@@ -119,7 +135,6 @@ public class User {
         this.userName = userName;
         this.email = email;
     }
-
 
 
 

@@ -97,6 +97,7 @@ public class UserServiceImpl implements UserService {
                 user.getName(),
                 user.getEmail(),
                 user.getPhoneNumber(),
+                user.getPoints(),
                 user.isAccountNonLocked(),
                 user.isAccountNonExpired(),
                 user.isCredentialsNonExpired(),

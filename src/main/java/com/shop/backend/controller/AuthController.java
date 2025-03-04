@@ -179,6 +179,7 @@ public class AuthController {
                 user.getEmail(),
                 user.getAddresses(),
                 user.getPhoneNumber(),
+                user.getPoints(),
                 user.isAccountNonLocked(),
                 user.isAccountNonExpired(),
                 user.isCredentialsNonExpired(),
