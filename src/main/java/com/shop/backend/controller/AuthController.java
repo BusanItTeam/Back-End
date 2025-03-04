@@ -29,6 +29,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -255,32 +256,25 @@ public class AuthController {
     }
 
     //이메일 검증
-    @PostMapping("/public/verify-email-code")
-    public ResponseEntity<?> verifyEmailCode(@RequestParam String email, @RequestParam String code) {
-        try {
-            boolean isVerified = userService.verifyEmailCode(email, code);
-            if (isVerified) {
-                return ResponseEntity.ok().body(new MessageResponse("이메일 인증 성공!"));
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("잘못된 인증번호입니다."));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("이메일 인증 중 오류 발생"));
-        }
+    @GetMapping("/public/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestParam String email,
+                                         @RequestParam String code) {
+        boolean isValid = userService.verifyEmailCode(email, code);
+        return isValid ? ResponseEntity.ok("이메일 인증 성공")
+                : ResponseEntity.status(HttpStatus.BAD_REQUEST).body("인증 실패");
     }
+
+
 
 
     @PostMapping("/public/send-email")
     public ResponseEntity<?> successEmail(@RequestParam String email) {
-        try{
-            userService.generateEmailResetToken(email);
-            return ResponseEntity.ok(new MessageResponse("Eamil reset email sent!"));
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new MessageResponse("Error sending password reset email"));
+        if (userRepository.existsByEmail(email)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 존재하는 이메일입니다.");
         }
+        userService.generateEmailResetToken(email);
+        return ResponseEntity.ok("이메일 인증코드가 전송되었습니다.");
+
     }
 
 

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -30,6 +31,7 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     EmailService emailService;
+
 
     @Value("${frontend.url}")
     String frontendUrl;
@@ -111,6 +113,7 @@ public class UserServiceImpl implements UserService {
         );
     }
 
+
     @Override
     public void generatePasswordResetToken(String email){
         User user = userRepository.findByEmail(email)
@@ -147,22 +150,39 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    @Transactional  // 트랜잭션 적용
     public void generateEmailResetToken(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("이메일을 찾을 수 없습니다."));
-
         String verificationCode = generateVerificationCode();
         Instant expiryDate = Instant.now().plus(10, ChronoUnit.MINUTES);
-        EmailToken emailToken = new EmailToken(verificationCode, expiryDate, user);
-        emailRepository.save(emailToken);
 
-        emailService.sendEmailReset(user.getEmail(), "이메일 인증번호: " + verificationCode);
+        // 기존에 같은 이메일로 생성된 인증번호가 있다면 삭제
+        emailRepository.deleteByEmail(email);  // 삭제 시 트랜잭션 필요
+
+        EmailToken emailToken = new EmailToken(email, verificationCode, expiryDate);
+        emailRepository.save(emailToken);  // 저장도 트랜잭션 내에서 실행됨
+
+        // 이메일 전송
+        emailService.sendEmailReset(email, "이메일 인증번호: " + verificationCode);
     }
+
 
     @Override
-    public boolean verifyEmailCode(String email, String code) {
-        return false;
+    public boolean verifyEmailCode(String email, String verificationCode) {
+        Optional<EmailToken> tokenOpt = emailRepository.findByEmailAndCode(email, verificationCode);
+
+        if (tokenOpt.isEmpty() || tokenOpt.get().isExpired() || tokenOpt.get().isUsed()) {
+            return false;
+        }
+
+        // 인증 성공 시 사용된 것으로 표시
+        EmailToken token = tokenOpt.get();
+        token.markUsed();
+        emailRepository.save(token);
+
+        return true;
     }
+
+
 
 
     //   6자리 인증 숫자 생성
@@ -174,23 +194,6 @@ public class UserServiceImpl implements UserService {
 
 
 
-    @Override
-    public void resetEmail(String token, String newEmail){
-        EmailToken emailToken = emailRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid Email reset Token"));
-
-        if(emailToken.isUsed())
-            throw new RuntimeException("Email reset token has already been used");
-        if (emailToken.getExpiryDate().isBefore(Instant.now()))
-            throw new RuntimeException("Email reset token has expired");
-
-        User user = emailToken.getUser();
-        user.setEmail(newEmail);
-        userRepository.save(user);
-
-        emailToken.setUsed(true);
-        emailRepository.save(emailToken);
-    }
 
 
 

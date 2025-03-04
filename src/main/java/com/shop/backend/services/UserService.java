@@ -39,7 +39,7 @@ public interface UserService {
     boolean verifyEmailCode(String email, String code);
 
 
-    void resetEmail(String token, String newEmail);
+
 }
 
 

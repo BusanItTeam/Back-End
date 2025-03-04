@@ -13,7 +13,10 @@ import java.util.Optional;
 public interface EmailRepository extends JpaRepository<EmailToken, Long> {
 
 
-    Optional<EmailToken> findByToken(String token);
 
 
+
+    void deleteByEmail(String email);
+
+    Optional<EmailToken> findByEmailAndCode(String email, String verificationCode);
 }
