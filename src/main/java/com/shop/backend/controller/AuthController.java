@@ -29,6 +29,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -178,6 +179,7 @@ public class AuthController {
                 user.getEmail(),
                 user.getAddresses(),
                 user.getPhoneNumber(),
+                user.getPoints(),
                 user.isAccountNonLocked(),
                 user.isAccountNonExpired(),
                 user.isCredentialsNonExpired(),
@@ -253,6 +255,42 @@ public class AuthController {
                     .body(new MessageResponse(e.getMessage()));
         }
     }
+
+    //이메일 검증
+    @GetMapping("/public/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestParam String email,
+                                         @RequestParam String code) {
+        boolean isValid = userService.verifyEmailCode(email, code);
+        return isValid ? ResponseEntity.ok("이메일 인증 성공")
+                : ResponseEntity.status(HttpStatus.BAD_REQUEST).body("인증 실패");
+    }
+
+
+
+
+    @PostMapping("/public/send-email")
+    public ResponseEntity<?> successEmail(@RequestParam String email) {
+        if (userRepository.existsByEmail(email)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 존재하는 이메일입니다.");
+        }
+        userService.generateEmailResetToken(email);
+        return ResponseEntity.ok("이메일 인증코드가 전송되었습니다.");
+
+    }
+
+
+    @PostMapping("/public/reset-email")
+    public ResponseEntity<?> resetEmail(@RequestParam String token,
+                                        @RequestParam String newEmail) {
+        try{
+            userService.resetPassword(token, newEmail);
+            return ResponseEntity.ok(new MessageResponse("Email reset successful"));
+        }catch (RuntimeException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new MessageResponse(e.getMessage()));
+        }
+    }
+
 
 }
 

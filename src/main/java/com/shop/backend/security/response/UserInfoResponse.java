@@ -2,6 +2,7 @@
 package com.shop.backend.security.response;
 
 import com.shop.backend.models.Address;
+import com.shop.backend.models.PointHistory;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDate;
@@ -17,6 +18,8 @@ public class UserInfoResponse {
     private String email;
     private String phoneNumber;
     private List<AddressResponse> addresses;
+    private List<PointHistory> pointHistories;
+    private int points;
     private boolean accountNonLocked;
     private boolean accountNonExpired;
     private boolean credentialsNonExpired;
@@ -29,13 +32,14 @@ public class UserInfoResponse {
     private final LocalDateTime createdDate;
 
     public UserInfoResponse(Long id, String username, String email, List<Address> addresses, String phoneNumber,
-                            boolean accountNonLocked, boolean accountNonExpired, boolean credentialsNonExpired,
+                            int points,  boolean accountNonLocked, boolean accountNonExpired, boolean credentialsNonExpired,
                             boolean enabled, LocalDate credentialsExpiryDate, LocalDate accountExpiryDate,
                             boolean isTwoFactorEnabled, List<String> roles, String name, LocalDateTime createdDate) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.phoneNumber = phoneNumber;
+        this.points = points;
         this.accountNonLocked = accountNonLocked;
         this.accountNonExpired = accountNonExpired;
         this.credentialsNonExpired = credentialsNonExpired;

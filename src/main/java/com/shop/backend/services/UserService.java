@@ -32,6 +32,14 @@ public interface UserService {
     void generatePasswordResetToken(String email);
 
     void resetPassword(String token, String newPassword);
+
+    void generateEmailResetToken(String email);
+
+    //이메일 검증
+    boolean verifyEmailCode(String email, String code);
+
+
+
 }
 
 

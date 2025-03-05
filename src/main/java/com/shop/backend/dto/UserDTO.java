@@ -1,5 +1,6 @@
 package com.shop.backend.dto;
 import com.shop.backend.models.Address;
+import com.shop.backend.models.PointHistory;
 import com.shop.backend.models.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -7,6 +8,8 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;//유저정보를 담기 위한 객체
 import java.util.List;
@@ -20,9 +23,13 @@ public class UserDTO {
     private String name;
     private String email;
     private String phoneNumber;
+    private int points;
+
     private boolean accountNonLocked;
     private boolean accountNonExpired;
     private boolean credentialsNonExpired;
+
+
     private boolean enabled;
     private LocalDate credentialsExpiryDate;
     private LocalDate accountExpiryDate;
