@@ -7,6 +7,8 @@ import com.shop.backend.models.Address;
 import com.shop.backend.models.AppRole;
 import com.shop.backend.models.Role;
 import com.shop.backend.models.User;
+import com.shop.backend.repository.AddressRepository;
+import com.shop.backend.repository.PasswordResetTokenRepository;
 import com.shop.backend.repository.RoleRepository;
 import com.shop.backend.repository.UserRepository;
 import com.shop.backend.security.jwt.JwtUtils;
@@ -60,7 +62,10 @@ public class AuthController {
 
     @Autowired
     UserService userService;
-
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
+    @Autowired
+    private AddressRepository addressRepository;
 
 
     //로그인 아 진짜 짜
@@ -180,6 +185,7 @@ public class AuthController {
                 user.getAddresses(),
                 user.getPhoneNumber(),
                 user.getPoints(),
+                user.getPointHistories(),
                 user.isAccountNonLocked(),
                 user.isAccountNonExpired(),
                 user.isCredentialsNonExpired(),
@@ -214,6 +220,7 @@ public class AuthController {
         User user = userService.findByUsername(userDetails.getUsername());
         user.setName(updateRequest.getName());
         user.setPhoneNumber(updateRequest.getPhoneNumber());
+
 
 
         // 기존 주소 업데이트 (첫 번째 주소만 수정 가능)
@@ -290,6 +297,15 @@ public class AuthController {
                     .body(new MessageResponse(e.getMessage()));
         }
     }
+    @DeleteMapping("/public/user/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        passwordResetTokenRepository.deleteById(id);
+        addressRepository.deleteById(id);
+        userRepository.deleteById(id);
+        System.out.println("삭제 요청된 사용자 아이디: " + id);
+    return ResponseEntity.ok().body(new MessageResponse("유저를 성공적으로 삭제하였습니다."));
+    }
+
 
 
 }

@@ -110,7 +110,8 @@ public class UserServiceImpl implements UserService {
                 user.getRole(),
                 user.getCreatedDate(),
                 user.getUpdatedDate(),
-                user.getAddresses()
+                user.getAddresses(),
+                user.getPointHistories()
         );
     }
 
