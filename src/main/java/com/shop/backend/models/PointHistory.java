@@ -1,5 +1,6 @@
 package com.shop.backend.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -17,10 +18,11 @@ public class PointHistory {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference
     private User user;
 
-    @Column(nullable = false,precision = 10,scale = 2)
-    private BigDecimal amount;
+    @Column(nullable = false)
+    private int amount;
 
 
     @CreationTimestamp

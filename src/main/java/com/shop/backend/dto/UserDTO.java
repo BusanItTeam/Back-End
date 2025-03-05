@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.awt.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;//유저정보를 담기 위한 객체
@@ -40,6 +41,7 @@ public class UserDTO {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private List<Address> addresses;
+    private List<PointHistory> histories;
 
 
 }
