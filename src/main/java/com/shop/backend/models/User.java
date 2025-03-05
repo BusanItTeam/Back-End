@@ -79,7 +79,7 @@ public class User {
 
 
 
-    @Column(precision = 10, scale = 2)
+
     private int points;
 
     @CreationTimestamp
@@ -163,6 +163,11 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Review> reviews;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Inquiry> inquiries;
+
 
 
     public void addAddress(Address address) {

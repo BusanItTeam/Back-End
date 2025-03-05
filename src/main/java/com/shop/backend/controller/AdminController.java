@@ -3,6 +3,7 @@ package com.shop.backend.controller;
 import com.shop.backend.dto.UserDTO;
 import com.shop.backend.models.Role;
 import com.shop.backend.models.User;
+import com.shop.backend.repository.AddressRepository;
 import com.shop.backend.repository.PasswordResetTokenRepository;
 import com.shop.backend.repository.UserRepository;
 import com.shop.backend.security.response.MessageResponse;
@@ -27,6 +28,9 @@ public class AdminController {
     @Autowired
     private PasswordResetTokenRepository passwordResetTokenRepository;
 
+    @Autowired
+
+
 
     @GetMapping("/getusers")
     public ResponseEntity<List<User>> getAllUsers() {
@@ -50,7 +54,6 @@ public class AdminController {
     @DeleteMapping("/user/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-
         passwordResetTokenRepository.deleteById(id);
         userService.deleteUser(id);
 
