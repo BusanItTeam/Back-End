@@ -8,6 +8,9 @@ import com.shop.backend.repository.ProductAddImageRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -47,6 +50,11 @@ public class ProductService {
     public Optional<Product> getProductById(Long id) {
         return productRepository.findById(id);
     }
+
+    public List<Product> searchProducts(String keyword) {
+        return productRepository.findByNameContainingIgnoreCase(keyword);
+    }
+
 
     @Transactional
     public Product updateProduct(Long id, Product updatedProduct, List<ProductOption> updatedOptions, List<ProductAddImage> updatedImages) {
@@ -174,4 +182,5 @@ public class ProductService {
             productRepository.delete(product);
         }
     }
+
 }
