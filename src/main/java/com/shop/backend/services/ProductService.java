@@ -48,6 +48,11 @@ public class ProductService {
         return productRepository.findById(id);
     }
 
+    public List<Product> searchProducts(String keyword) {
+        return productRepository.findByNameContainingIgnoreCase(keyword);
+    }
+
+
     @Transactional
     public Product updateProduct(Long id, Product updatedProduct, List<ProductOption> updatedOptions, List<ProductAddImage> updatedImages) {
         // 1. 기존 Product 정보 조회
@@ -174,4 +179,5 @@ public class ProductService {
             productRepository.delete(product);
         }
     }
+
 }
