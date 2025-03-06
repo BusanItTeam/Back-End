@@ -62,12 +62,13 @@ public class SecurityConfig {
                         request
                                 .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                                 .requestMatchers("/api/auths/public/**").permitAll()
+                                .requestMatchers("api/auths/public/user/**").permitAll()
                                 .requestMatchers("/api/products/**").permitAll()
                                 .requestMatchers("/api/cart/**").authenticated()
                                 .requestMatchers("/oauth2/**").permitAll()
                                 .requestMatchers("/images/**").permitAll()
                                 .requestMatchers("/api/mypage/**").authenticated()
-                                .requestMatchers("api/auths/user").authenticated()
+                                .requestMatchers("/api/auths/user").authenticated()
                                 .anyRequest().authenticated())
                 .oauth2Login(oauth2 -> {
                     oauth2.successHandler(oAuth2LoginSuccessHandler);
@@ -110,7 +111,7 @@ public class SecurityConfig {
                     .orElseGet(() -> roleRepository.save(new Role(AppRole.ROLE_ADMIN)));
 
             if (!userRepository.existsByUserName("user1")) {
-                User user1 = new User("user1", "유저1","user1@example.com","01045454545", passwordEncoder.encode("password1") );
+                User user1 = new User("user1", "유저1","user1@example.com","01045454545", 10000,  passwordEncoder.encode("password1") );
                 Address address = new Address("12345", "Seoul", "Gangnam-gu", "Apt 101", null);
                 user1.setAccountNonLocked(false);
                 user1.setAccountNonExpired(true);
@@ -130,7 +131,7 @@ public class SecurityConfig {
             }
 
             if (!userRepository.existsByUserName("admin")) {
-                User admin = new User("admin", "어드민1","admin@example.com","010-4545-4544",  passwordEncoder.encode("adminPass"));
+                User admin = new User("admin", "어드민1","admin@example.com","010-4545-4544", 20000, passwordEncoder.encode("adminPass"));
                 Address address = new Address("58575", "양주로154", "119동 1603호", "중부동,대동황토방", null);
                 admin.setAccountNonLocked(true);
                 admin.setAccountNonExpired(true);

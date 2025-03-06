@@ -43,6 +43,12 @@ public class ProductController {
         return productService.getAllProducts();
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<Product>> searchProducts(@RequestParam("keyword") String keyword) {
+        List<Product> searchResults = productService.searchProducts(keyword);
+        return ResponseEntity.ok(searchResults);
+    }
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Product> addProduct(
             @RequestPart("name") String name,
@@ -50,7 +56,8 @@ public class ProductController {
             @RequestPart("description") String description,
             @RequestPart("categoryId") String categoryId,
             @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles,
-            @RequestPart("options") String optionsJson // JSON array of options
+            @RequestPart("options") String optionsJson, // JSON array of options
+            @RequestPart(value = "discountRate", required = false) String discountRate // 할인율 추가
     ) throws IOException {
         try {
             Optional<Category> categoryOptional = categoryRepository.findById(Long.parseLong(categoryId));
@@ -62,6 +69,13 @@ public class ProductController {
             product.setName(name);
             product.setDescription(description);
             product.setPrice(new BigDecimal(price));
+
+            // 할인율 설정
+            if (discountRate != null && !discountRate.isEmpty()) {
+                product.setDiscountRate(new BigDecimal(discountRate));
+            } else {
+                product.setDiscountRate(null); // or BigDecimal.ZERO if you prefer
+            }
 
             Category category = categoryOptional.get();
             product.setCategory(category);
@@ -136,7 +150,8 @@ public class ProductController {
             @RequestPart("description") String description,
             @RequestPart("categoryId") String categoryId,
             @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles,
-            @RequestPart("options") String optionsJson
+            @RequestPart("options") String optionsJson,
+            @RequestPart(value = "discountRate", required = false) String discountRate // 할인율 추가
     ) throws IOException {
         try {
             Optional<Category> categoryOptional = categoryRepository.findById(Long.parseLong(categoryId));
@@ -144,53 +159,42 @@ public class ProductController {
                 return ResponseEntity.badRequest().build();
             }
 
-            Optional<Product> productOptional = productService.getProductById(id);
-            if (!productOptional.isPresent()) {
-                return ResponseEntity.notFound().build();
+            // 1. 업데이트할 Product 생성 및 정보 설정
+            Product updatedProduct = new Product();
+            updatedProduct.setName(name);
+            updatedProduct.setDescription(description);
+            updatedProduct.setPrice(new BigDecimal(price));
+
+            // 할인율 설정
+            if (discountRate != null && !discountRate.isEmpty()) {
+                updatedProduct.setDiscountRate(new BigDecimal(discountRate));
+            } else {
+                updatedProduct.setDiscountRate(null); // or BigDecimal.ZERO if you prefer
             }
 
-            Product existingProduct = productOptional.get();
-            existingProduct.setName(name);
-            existingProduct.setDescription(description);
-            existingProduct.setPrice(new BigDecimal(price));
-
             Category category = categoryOptional.get();
-            existingProduct.setCategory(category);
+            updatedProduct.setCategory(category);
 
-            // 기존 이미지 삭제 로직 (선택적)
+            // 2. 업데이트할 ProductOption 생성 및 정보 설정
+            List<ProductOption> updatedOptions = parseOptions(optionsJson, updatedProduct);
+
+            // 3. 업데이트할 ProductAddImage 생성 및 정보 설정
+            List<ProductAddImage> updatedImages = new ArrayList<>();
             if (imageFiles != null && !imageFiles.isEmpty()) {
-                // 기존 이미지 파일 삭제
-                if (existingProduct.getImages() != null) {
-                    for (ProductAddImage productImage : existingProduct.getImages()) {
-                        try {
-                            Path fileToDelete = Paths.get(uploadPath, productImage.getImageUrl().substring(productImage.getImageUrl().lastIndexOf("/") + 1));
-                            Files.deleteIfExists(fileToDelete);
-                            productAddImageRepository.delete(productImage);
-                            System.out.println("Deleted file: " + fileToDelete.toString());
-                        } catch (IOException e) {
-                            System.err.println("Failed to delete file: " + e.getMessage());
-                            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-                        }
-                    }
-                    existingProduct.getImages().clear();
-                }
-
-                List<ProductAddImage> images = new ArrayList<>();
                 for (MultipartFile imageFile : imageFiles) {
                     String imageUrlPath = saveImage(imageFile);
                     ProductAddImage productAddImage = new ProductAddImage();
                     productAddImage.setImageUrl(imageUrlPath);
-                    productAddImage.setProduct(existingProduct);
-                    images.add(productAddImage);
+                    productAddImage.setProduct(updatedProduct);
+                    updatedImages.add(productAddImage);
                 }
-                existingProduct.setImages(images);
             }
 
-            List<ProductOption> options = parseOptions(optionsJson, existingProduct);
-            existingProduct.setOptions(options);
+            // 4. ProductService를 통해 업데이트 수행
+            Product updatedProductResult = productService.updateProduct(id, updatedProduct, updatedOptions, updatedImages);
 
-            Product updatedProduct = productService.saveProduct(existingProduct);
-            return ResponseEntity.ok(updatedProduct);
+            return ResponseEntity.ok(updatedProductResult);
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

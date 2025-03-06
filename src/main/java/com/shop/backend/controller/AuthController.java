@@ -7,6 +7,8 @@ import com.shop.backend.models.Address;
 import com.shop.backend.models.AppRole;
 import com.shop.backend.models.Role;
 import com.shop.backend.models.User;
+import com.shop.backend.repository.AddressRepository;
+import com.shop.backend.repository.PasswordResetTokenRepository;
 import com.shop.backend.repository.RoleRepository;
 import com.shop.backend.repository.UserRepository;
 import com.shop.backend.security.jwt.JwtUtils;
@@ -29,6 +31,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -59,7 +62,10 @@ public class AuthController {
 
     @Autowired
     UserService userService;
-
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
+    @Autowired
+    private AddressRepository addressRepository;
 
 
     //로그인 아 진짜 짜
@@ -178,6 +184,8 @@ public class AuthController {
                 user.getEmail(),
                 user.getAddresses(),
                 user.getPhoneNumber(),
+                user.getPoints(),
+                user.getPointHistories(),
                 user.isAccountNonLocked(),
                 user.isAccountNonExpired(),
                 user.isCredentialsNonExpired(),
@@ -212,6 +220,7 @@ public class AuthController {
         User user = userService.findByUsername(userDetails.getUsername());
         user.setName(updateRequest.getName());
         user.setPhoneNumber(updateRequest.getPhoneNumber());
+
 
 
         // 기존 주소 업데이트 (첫 번째 주소만 수정 가능)
@@ -253,6 +262,51 @@ public class AuthController {
                     .body(new MessageResponse(e.getMessage()));
         }
     }
+
+    //이메일 검증
+    @GetMapping("/public/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestParam String email,
+                                         @RequestParam String code) {
+        boolean isValid = userService.verifyEmailCode(email, code);
+        return isValid ? ResponseEntity.ok("이메일 인증 성공")
+                : ResponseEntity.status(HttpStatus.BAD_REQUEST).body("인증 실패");
+    }
+
+
+
+
+    @PostMapping("/public/send-email")
+    public ResponseEntity<?> successEmail(@RequestParam String email) {
+        if (userRepository.existsByEmail(email)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 존재하는 이메일입니다.");
+        }
+        userService.generateEmailResetToken(email);
+        return ResponseEntity.ok("이메일 인증코드가 전송되었습니다.");
+
+    }
+
+
+    @PostMapping("/public/reset-email")
+    public ResponseEntity<?> resetEmail(@RequestParam String token,
+                                        @RequestParam String newEmail) {
+        try{
+            userService.resetPassword(token, newEmail);
+            return ResponseEntity.ok(new MessageResponse("Email reset successful"));
+        }catch (RuntimeException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new MessageResponse(e.getMessage()));
+        }
+    }
+    @DeleteMapping("/public/user/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        passwordResetTokenRepository.deleteById(id);
+        addressRepository.deleteById(id);
+        userRepository.deleteById(id);
+        System.out.println("삭제 요청된 사용자 아이디: " + id);
+    return ResponseEntity.ok().body(new MessageResponse("유저를 성공적으로 삭제하였습니다."));
+    }
+
+
 
 }
 

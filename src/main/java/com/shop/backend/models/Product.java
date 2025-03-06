@@ -30,6 +30,10 @@ public class Product {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
+    // 할인율 추가
+    @Column(precision = 5, scale = 2)
+    private BigDecimal discountRate;
+
     @CreationTimestamp
     @Column(nullable = false)
     private Timestamp createdAt;
