@@ -62,7 +62,7 @@ public class SecurityConfig {
                         request
                                 .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                                 .requestMatchers("/api/auths/public/**").permitAll()
-                                .requestMatchers("api/auths/public/user/**").permitAll()
+                                .requestMatchers("/api/auths/public/user/**").permitAll()
                                 .requestMatchers("/api/products/**").permitAll()
                                 .requestMatchers("/api/cart/**").authenticated()
                                 .requestMatchers("/oauth2/**").permitAll()
@@ -112,7 +112,6 @@ public class SecurityConfig {
 
             if (!userRepository.existsByUserName("user1")) {
                 User user1 = new User("user1", "유저1","user1@example.com","01045454545", 10000,  passwordEncoder.encode("password1") );
-                Address address = new Address("12345", "Seoul", "Gangnam-gu", "Apt 101", null);
                 user1.setAccountNonLocked(false);
                 user1.setAccountNonExpired(true);
                 user1.setCredentialsNonExpired(true);
@@ -122,17 +121,16 @@ public class SecurityConfig {
                 user1.setTwoFactorEnabled(false);
                 user1.setSignUpMethod("email");
                 user1.setRole(userRole);
-                addressRepository.save(address);
                 userRepository.save(user1);
-
-
+                Address address = new Address("12345", "Seoul", "Gangnam-gu", "Apt 101",null);
+                address.setUser(user1);
+                addressRepository.save(address);
 
 
             }
 
             if (!userRepository.existsByUserName("admin")) {
                 User admin = new User("admin", "어드민1","admin@example.com","010-4545-4544", 20000, passwordEncoder.encode("adminPass"));
-                Address address = new Address("58575", "양주로154", "119동 1603호", "중부동,대동황토방", null);
                 admin.setAccountNonLocked(true);
                 admin.setAccountNonExpired(true);
                 admin.setCredentialsNonExpired(true);
@@ -142,8 +140,11 @@ public class SecurityConfig {
                 admin.setTwoFactorEnabled(false);
                 admin.setSignUpMethod("email");
                 admin.setRole(adminRole);
-                addressRepository.save(address);
                 userRepository.save(admin);
+                Address address = new Address("58575", "양주로154", "119동 1603호", "중부동,대동황토방", null);
+                address.setUser(admin);
+                addressRepository.save(address);
+
             }
         };
     }
