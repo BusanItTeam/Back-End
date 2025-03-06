@@ -21,4 +21,9 @@ public class WishList {
     @JoinColumn(name = "product_id", nullable = false)
     @JsonIgnore // 무한 루프 방지
     private Product product;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "option_id")
+    @JsonIgnore // 무한 루프 방지
+    private ProductOption productOption;
 }

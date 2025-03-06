@@ -1,6 +1,7 @@
 package com.shop.backend.repository;
 
 import com.shop.backend.models.Product;
+import com.shop.backend.models.ProductOption;
 import com.shop.backend.models.User;
 import com.shop.backend.models.WishList;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,4 +24,7 @@ public interface WishListRepository extends JpaRepository<WishList, Long> {
     List<WishList> findByUser_UserId(Long userId);
 
     boolean existsByProduct_ProductIdAndUser_UserName(Long productId, String username);
+
+    boolean existsByUserAndProductAndProductOption(User user, Product product, ProductOption productOption);
+    void deleteByUserAndProductAndProductOption(User user, Product product, ProductOption productOption);
 }
