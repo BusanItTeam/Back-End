@@ -36,6 +36,7 @@ public class Address {
     @Setter
     private String extraAddress;
 
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",  nullable = false)
     @JsonBackReference
@@ -43,13 +44,14 @@ public class Address {
 
 
     public Address(String postcode, String address, String detailAddress, String extraAddress, User user) {
+
         this.postcode = postcode;
         this.address = address;
         this.detailAddress = detailAddress;
         this.extraAddress = extraAddress;
         this.user = user;
-
     }
+
 
 
 
