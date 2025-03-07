@@ -1,54 +1,37 @@
 package com.shop.backend.controller;
 
 
+import com.shop.backend.dto.CartDTO;
 import com.shop.backend.models.Cart;
+import com.shop.backend.models.User;
 import com.shop.backend.services.CartService;
+import com.shop.backend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+import java.util.List;
+
 @RestController
-@RequestMapping("/api/carts")
+@RequestMapping("/api/cart")
 public class CartController {
 
     @Autowired
     private CartService cartService;
+    @Autowired
+    private UserService userService;
 
-    public CartController(CartService cartService) {
-        this.cartService = cartService;
+    @GetMapping("/show")
+    public ResponseEntity<List<CartDTO>> getUserCart(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = userService.findByUsername(userDetails.getUsername());
+        List<CartDTO> cartItems = cartService.getCartItems(user.getUserId());
+
+        return ResponseEntity.ok(cartItems);
     }
 
 
-    // 유저아이디로 카트 목록 찾
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<?> getCart(@PathVariable Long userId) {
-        return ResponseEntity.ok(cartService.getCartByUser(userId));
-    }
-
-    // 카트추가
-    @PostMapping("/add")
-    public ResponseEntity<Cart> addToCart(
-            @RequestParam Long userId,
-            @RequestParam Long productId,
-            @RequestParam int quantity) {
-        return ResponseEntity.ok(cartService.addToCart(userId, productId, quantity));
-    }
-
-
-    // 카트 하나씩 제거
-    @DeleteMapping("/removeOne")
-    public ResponseEntity<Void> removeOneFromCart(
-            @RequestParam Long userId,
-            @RequestParam Long productId) {
-        cartService.removeOneFromCart(userId, productId);
-        return ResponseEntity.noContent().build();
-    }
-
-    //장바구니 비우기
-    @DeleteMapping("/clear")
-    public ResponseEntity<Void> clearCart(@RequestParam Long userId) {
-        cartService.clearCart(userId);
-        return ResponseEntity.noContent().build();
-    }
 }

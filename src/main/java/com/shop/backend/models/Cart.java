@@ -1,5 +1,8 @@
 package com.shop.backend.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -19,7 +22,9 @@ public class Cart {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "product_id")
+    @JsonIgnore
+    @JsonManagedReference
     private Product product;
 
     @Column(nullable = false)
@@ -28,4 +33,7 @@ public class Cart {
     @CreationTimestamp
     @Column(nullable = false)
     private Timestamp createdAt;
+
+
+
 }
