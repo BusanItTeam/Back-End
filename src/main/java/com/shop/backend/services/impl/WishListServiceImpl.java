@@ -106,29 +106,4 @@ public class WishListServiceImpl implements WishListService {
     public boolean isProductInWishlist(Long productId, String username) {
         return wishListRepository.existsByProduct_ProductIdAndUser_UserName(productId, username);
     }
-
 }
-//    @Override
-//    @Transactional
-//    public void deleteWishListByUserAndProduct(Long productId, String username) {
-//        User user = userRepository.findByUserName(username)
-//                .orElseThrow(() -> new RuntimeException("User not found"));
-//
-//        Product product = productRepository.findById(productId)
-//                .orElseThrow(() -> new RuntimeException("Product not found"));
-//
-//        ProductOption productOption = null;
-//        if (optionId != null) {
-//            productOption = productOptionRepository.findById(optionId)
-//                    .orElseThrow(() -> new RuntimeException("Product option not found"));
-//        }
-//
-//        wishListRepository.deleteByUserAndProductAndProductOption(user, product, productOption);
-//    }
-//
-//    @Override
-//    public boolean isProductInWishlist(Long productId, String username) {
-//        return wishListRepository.existsByProduct_ProductIdAndUser_UserName(productId, username);
-//    }
-//
-//}
