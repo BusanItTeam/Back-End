@@ -15,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,11 +57,21 @@ public class WishListController {
                     }
 
                     dto.setProductImage(getProductImageUrl(product));
-                    dto.setPrice(product.getPrice());
+                    // 할인된 가격으로 설정
+                    dto.setPrice(calculateDiscountedPrice(product));
                     return dto;
                 })
                 .collect(Collectors.toList());
         return ResponseEntity.ok(wishListDTOs);
+    }
+
+    // 할인 가격 계산 메서드
+    private BigDecimal calculateDiscountedPrice(Product product) {
+        if (product.getDiscountRate() != null && product.getDiscountRate().compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal discountAmount = product.getPrice().multiply(product.getDiscountRate().divide(new BigDecimal("100")));
+            return product.getPrice().subtract(discountAmount);
+        }
+        return product.getPrice();
     }
 
 
