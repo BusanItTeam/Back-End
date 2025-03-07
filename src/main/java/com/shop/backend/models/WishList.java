@@ -23,7 +23,7 @@ public class WishList {
     private Product product;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "option_id")
+    @JoinColumn(name = "option_id", nullable = true)
     @JsonIgnore // 무한 루프 방지
     private ProductOption productOption;
 }
