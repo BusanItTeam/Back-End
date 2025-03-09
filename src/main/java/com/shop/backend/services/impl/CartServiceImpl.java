@@ -42,7 +42,7 @@ public class CartServiceImpl implements CartService {
                 .map(cart -> {
                     Product product = cart.getProduct();
 
-                    // ✅ 대표 이미지 한 개만 가져오기
+
                     String mainImageUrl = (product.getImages() != null && !product.getImages().isEmpty()) ?
                             product.getImages().get(0).getImageUrl() :
                             "https://example.com/default.jpg"; // 기본 이미지
