@@ -45,6 +45,7 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductOption> options;
 
+
     public String getMainImageUrl() {
         return (images != null && !images.isEmpty())
                 ? images.get(0).getImageUrl() // 리스트에서 첫 번째 이미지 URL 가져오기
