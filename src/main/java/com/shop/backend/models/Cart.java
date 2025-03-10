@@ -10,7 +10,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
-
+import java.math.BigDecimal;
 @Entity
 @Data
 @Table(name = "cart")
@@ -48,4 +48,14 @@ public class Cart {
     private String color;
 
 
+
+    public BigDecimal getPrice() {
+        if (product == null || product.getPrice() == null) {
+            return BigDecimal.ZERO; // 상품이 없는 경우 기본값
+        }
+
+        BigDecimal discountRate = product.getDiscountRate().divide(BigDecimal.valueOf(100));
+        BigDecimal discountAmount = product.getPrice().multiply(discountRate);
+        return product.getPrice().subtract(discountAmount);
+    }
 }

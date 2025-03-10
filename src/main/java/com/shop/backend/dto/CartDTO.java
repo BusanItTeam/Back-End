@@ -1,9 +1,10 @@
 package com.shop.backend.dto;
 
-import com.shop.backend.models.Category;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.math.BigDecimal;
 
 @Data
 @Getter
@@ -18,8 +19,9 @@ public class CartDTO {
     private String color;
     private String size;
     private String categoryName;
+    private BigDecimal discountRate;
 
-    public CartDTO(Long cartId, Long productId, String name, String mainImageUrl, int priceAsInt, int quantity, String categoryName, String size, String color) {
+    public CartDTO(Long cartId, Long productId, String name, String mainImageUrl, int priceAsInt, int quantity, String categoryName, String size, String color, BigDecimal discountRate) {
         this.cartId = cartId;
         this.productId = productId;
         this.productName = name;
@@ -29,6 +31,7 @@ public class CartDTO {
         this.categoryName = categoryName;
         this.color = color;
         this.size = size;
+        this.discountRate = discountRate;
 
     }
 

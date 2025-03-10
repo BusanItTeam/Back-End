@@ -57,11 +57,12 @@ public class CartServiceImpl implements CartService {
                             product.getProductId(),
                             product.getName(),
                             mainImageUrl,
-                            product.getPrice().intValue(),
+                            cart.getPrice().intValue(),
                             cart.getQuantity(),
                             categoryName,
                             productOption.getSize(),
-                            productOption.getColor()
+                            productOption.getColor(),
+                            product.getDiscountRate()
                     );
                 })
                 .collect(Collectors.toList());
