@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
@@ -34,6 +36,16 @@ public class Cart {
     @Column(nullable = false)
     private Timestamp createdAt;
 
+
+    @Getter
+    @Setter
+    @Column(nullable = false, name = "product_size") // ✅ DTO에서 받은 사이즈 저장
+    private String size;  // ✅ 기존 문제 해결 (DTO 반영)
+
+    @Setter
+    @Getter
+    @Column(nullable = false, name = "product_color") // ✅ DTO에서 받은 색상 저장
+    private String color;
 
 
 }

@@ -5,12 +5,10 @@ import com.shop.backend.repository.InventoryRepository;
 import com.shop.backend.repository.ProductOptionRepository;
 import com.shop.backend.repository.ProductRepository;
 import com.shop.backend.repository.ProductAddImageRepository;
+import com.shop.backend.repository.WishListRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -36,6 +34,9 @@ public class ProductService {
     @Autowired
     private ProductAddImageRepository productAddImageRepository;
 
+    @Autowired
+    private WishListRepository wishListRepository;
+
     @Value("${file.upload.path}")
     private String uploadPath;
 
@@ -55,9 +56,9 @@ public class ProductService {
         return productRepository.findByNameContainingIgnoreCase(keyword);
     }
 
-
     @Transactional
-    public Product updateProduct(Long id, Product updatedProduct, List<ProductOption> updatedOptions, List<ProductAddImage> updatedImages) {
+    public Product updateProduct(Long id, Product updatedProduct, List<ProductOption> updatedOptions,
+                                 List<ProductAddImage> updatedImages) {
         // 1. 기존 Product 정보 조회
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + id));
@@ -71,18 +72,19 @@ public class ProductService {
 
         // 3. 기존 ProductAddImage 삭제 후 새로운 ProductAddImage 추가
         // 기존 이미지 삭제
-        Iterator<ProductAddImage> iterator = existingProduct.getImages().iterator();
-        while (iterator.hasNext()) {
-            ProductAddImage productImage = iterator.next();
+        Iterator<ProductAddImage> imageIterator = existingProduct.getImages().iterator();
+        while (imageIterator.hasNext()) {
+            ProductAddImage productImage = imageIterator.next();
             try {
-                Path fileToDelete = Paths.get(uploadPath, productImage.getImageUrl().substring(productImage.getImageUrl().lastIndexOf("/") + 1));
+                Path fileToDelete = Paths.get(uploadPath,
+                        productImage.getImageUrl().substring(productImage.getImageUrl().lastIndexOf("/") + 1));
                 Files.deleteIfExists(fileToDelete);
                 System.out.println("Deleted file: " + fileToDelete.toString());
             } catch (IOException e) {
                 System.err.println("Failed to delete file: " + e.getMessage());
                 // 파일 삭제 실패 시, 예외를 던지지 않고 로그만 남기도록 처리
             }
-            iterator.remove(); // iterator를 사용하여 컬렉션에서 안전하게 삭제
+            imageIterator.remove(); // iterator를 사용하여 컬렉션에서 안전하게 삭제
             productAddImageRepository.delete(productImage); // DB에서도 삭제
         }
 
@@ -93,17 +95,23 @@ public class ProductService {
             existingProduct.getImages().add(image);
         }
 
-        // 4. 기존 ProductOption 삭제 후 새로운 ProductOption 추가 (ProductService에 관련 로직 구현 필요)
-        // 기존 옵션 삭제 로직 (ProductOptionService로 분리 권장)
-        existingProduct.getOptions().forEach(option -> {
+        // 4. 기존 ProductOption 삭제 및 새로운 ProductOption 추가
+        Iterator<ProductOption> optionIterator = existingProduct.getOptions().iterator();
+        while (optionIterator.hasNext()) {
+            ProductOption option = optionIterator.next();
+
+            // WishList에서 optionId를 참조하는 데이터 삭제
+            wishListRepository.deleteByProductOption(option);
+
             if (option.getInventory() != null) {
                 inventoryRepository.delete(option.getInventory());
             }
             productOptionRepository.delete(option);
-        });
+            optionIterator.remove(); // iterator를 사용하여 안전하게 삭제
+        }
         existingProduct.getOptions().clear();
 
-        // 새로운 옵션 추가 로직 (ProductOptionService로 분리 권장)
+        // 새로운 옵션 추가
         for (ProductOption option : updatedOptions) {
             option.setProduct(existingProduct);
             ProductOption savedOption = productOptionRepository.save(option);
@@ -117,11 +125,16 @@ public class ProductService {
             }
             existingProduct.getOptions().add(option);
         }
+        // 위시리스트에 있는 상품 정보 업데이트
+        List<WishList> wishLists = wishListRepository.findByProduct(existingProduct);
+        for (WishList wishList : wishLists) {
+            wishList.setProduct(existingProduct); // 업데이트된 상품으로 설정
+            wishListRepository.save(wishList);
+        }
 
         // 5. Product 정보 저장 및 반환
         return productRepository.save(existingProduct);
     }
-
 
     @Transactional
     public Product addProductWithOptions(Product product, List<ProductOption> options) {
@@ -140,7 +153,7 @@ public class ProductService {
 
             Inventory inventory = option.getInventory();
             if (inventory != null) {
-                inventory.setOption(savedOption); // 이 부분을 추가해야 합니다.
+                inventory.setOption(savedOption);
                 inventoryRepository.save(inventory);
                 savedOption.setInventory(inventory);
                 productOptionRepository.save(savedOption);
@@ -182,5 +195,4 @@ public class ProductService {
             productRepository.delete(product);
         }
     }
-
 }
