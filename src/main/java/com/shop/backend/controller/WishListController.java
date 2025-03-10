@@ -15,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,21 +48,32 @@ public class WishListController {
         List<WishList> wishLists = wishListService.getWishListByUser(username);
         List<WishListDTO> wishListDTOs = wishLists.stream()
                 .map(wishList -> {
-                    // Optional을 안전하게 처리
-                    Product product = productService.getProductById(wishList.getProduct().getProductId())
-                            .orElseThrow(() -> new RuntimeException("Product not found")); // Product가 없을 경우 예외 발생
-
+                    Product product = wishList.getProduct();
                     WishListDTO dto = convertToDTO(wishList);
-                    // 추가된 필드들 설정
-                    dto.setProductName(product.getName());
-                    dto.setProductImage(getProductImageUrl(product)); // 이미지 URL 설정
-                    dto.setPrice(product.getPrice()); // BigDecimal 타입 처리
-                    dto.setOption(getProductOption(product, wishList.getProductOption().getOptionId())); // 옵션 처리
+
+                    // 옵션이 없는 경우 기본값 설정
+                    if (wishList.getProductOption() == null) {
+                        dto.setOption("옵션을 선택해주세요.");
+                    }
+
+                    dto.setProductImage(getProductImageUrl(product));
+                    // 할인된 가격으로 설정
+                    dto.setPrice(calculateDiscountedPrice(product));
                     return dto;
                 })
                 .collect(Collectors.toList());
         return ResponseEntity.ok(wishListDTOs);
     }
+
+    // 할인 가격 계산 메서드
+    private BigDecimal calculateDiscountedPrice(Product product) {
+        if (product.getDiscountRate() != null && product.getDiscountRate().compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal discountAmount = product.getPrice().multiply(product.getDiscountRate().divide(new BigDecimal("100")));
+            return product.getPrice().subtract(discountAmount);
+        }
+        return product.getPrice();
+    }
+
 
     @DeleteMapping("/{wishListId}")
     public ResponseEntity<?> deleteWishList(@PathVariable Long wishListId,
@@ -100,6 +112,7 @@ public class WishListController {
         wishListDTO.setWishListId(wishList.getWishListId());
         wishListDTO.setUserId(wishList.getUser().getUserId());
         wishListDTO.setProductId(wishList.getProduct().getProductId());
+        wishListDTO.setProductName(wishList.getProduct().getName());
 
         // 상품 옵션 정보 추가
         if (wishList.getProductOption() != null) {
