@@ -11,7 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-
+import java.math.BigDecimal;
 @Entity
 @Data
 @Table(name = "cart")
@@ -48,15 +48,15 @@ public class Cart {
     @Column(nullable = false, name = "product_color") //
     private String color;
 
-
-    public BigDecimal getPrice() {
+    
+  public BigDecimal getPrice() {
         if (product == null || product.getPrice() == null) {
             return BigDecimal.ZERO; // 상품이 없는 경우 기본값
         }
 
-        BigDecimal discountRate = product.getDiscountRate().divide(BigDecimal.valueOf(100)); // ✅ 그대로 사용 가능
+        BigDecimal discountRate = product.getDiscountRate().divide(BigDecimal.valueOf(100));
         BigDecimal discountAmount = product.getPrice().multiply(discountRate);
-        return product.getPrice().subtract(discountAmount); // ✅ 할인된 가격 반환
+        return product.getPrice().subtract(discountAmount);
     }
 
 }
