@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -57,11 +58,12 @@ public class CartServiceImpl implements CartService {
                             product.getProductId(),
                             product.getName(),
                             mainImageUrl,
-                            product.getPrice().intValue(),
+                            cart.getPrice().intValue(),
                             cart.getQuantity(),
                             categoryName,
                             productOption.getSize(),
-                            productOption.getColor()
+                            productOption.getColor(),
+                            product.getDiscountRate()
                     );
                 })
                 .collect(Collectors.toList());
@@ -96,6 +98,8 @@ public class CartServiceImpl implements CartService {
 
 
         Optional<Cart> existingCartItem = cartRepository.findByUserAndProductAndSize(user, product, cartDTO.getSize());
+
+
 
         if (existingCartItem.isPresent()) {
             // 같은 상품이 이미 존재하면 수량 증가

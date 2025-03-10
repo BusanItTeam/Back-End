@@ -9,8 +9,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
-
+import java.math.BigDecimal;
 @Entity
 @Data
 @Table(name = "cart")
@@ -39,13 +40,23 @@ public class Cart {
 
     @Getter
     @Setter
-    @Column(nullable = false, name = "product_size") // ✅ DTO에서 받은 사이즈 저장
-    private String size;  // ✅ 기존 문제 해결 (DTO 반영)
+    @Column(nullable = false, name = "product_size") //
+    private String size;
 
     @Setter
     @Getter
-    @Column(nullable = false, name = "product_color") // ✅ DTO에서 받은 색상 저장
+    @Column(nullable = false, name = "product_color") //
     private String color;
 
+    
+  public BigDecimal getPrice() {
+        if (product == null || product.getPrice() == null) {
+            return BigDecimal.ZERO; // 상품이 없는 경우 기본값
+        }
+
+        BigDecimal discountRate = product.getDiscountRate().divide(BigDecimal.valueOf(100));
+        BigDecimal discountAmount = product.getPrice().multiply(discountRate);
+        return product.getPrice().subtract(discountAmount);
+    }
 
 }
