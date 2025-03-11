@@ -8,16 +8,13 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
+
+import java.util.List;
+
 public interface CartService {
-
-
-
-    List<CartDTO> getCartItems(Long userId);
-
-
-    boolean updateCartItem(Long userId, Long cartId, int quantity);
-
-    boolean addToCart(Long userId, CartDTO cartDTO);
-
-    void deleteCartItem(Long cartId);
+    CartDTO addToCart(User user, Long productId, Long optionId, int quantity);
+    List<CartDTO> getCartItems(User user);
+    void removeFromCart(User user, Long cartId);
+    void updateCartQuantity(User user, Long cartId, int quantity);
+    void clearCart(User user);
 }

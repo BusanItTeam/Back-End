@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
+import javax.swing.text.html.Option;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.math.BigDecimal;
@@ -33,20 +34,17 @@ public class Cart {
     @Column(nullable = false)
     private int quantity;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "option_id", nullable = true)
+    @JsonIgnore
+    private ProductOption productOption;
+
     @CreationTimestamp
     @Column(nullable = false)
     private Timestamp createdAt;
 
 
-    @Getter
-    @Setter
-    @Column(nullable = false, name = "product_size") //
-    private String size;
 
-    @Setter
-    @Getter
-    @Column(nullable = false, name = "product_color") //
-    private String color;
 
     
   public BigDecimal getPrice() {

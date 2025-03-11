@@ -8,16 +8,11 @@ import com.shop.backend.models.User;
 import com.shop.backend.repository.CartRepository;
 import com.shop.backend.repository.ProductOptionRepository;
 import com.shop.backend.repository.ProductRepository;
-import com.shop.backend.repository.UserRepository;
 import com.shop.backend.services.CartService;
-import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -29,107 +24,99 @@ public class CartServiceImpl implements CartService {
     private CartRepository cartRepository;
 
     @Autowired
-    private ProductOptionRepository productOptionRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private ProductOptionRepository productOptionRepository;
+
+
     @Override
-    public List<CartDTO> getCartItems(Long userId) {
-        List<Cart> cartItems = cartRepository.findByUser_UserId(userId);
-        return cartItems.stream()
-                .map(cart -> {
-                    Product product = cart.getProduct();
-
-
-                    String mainImageUrl = (product.getImages() != null && !product.getImages().isEmpty()) ?
-                            product.getImages().get(0).getImageUrl() :
-                            "https://example.com/default.jpg"; // 기본 이미지
-
-                    String categoryName = (product.getCategory() != null) ? product.getCategory().getName() : "";
-
-                    ProductOption productOption = productOptionRepository.findByProduct_ProductId(product.getProductId())
-                            .orElse(null);
-
-                    return new CartDTO(
-                            cart.getCartId(),
-                            product.getProductId(),
-                            product.getName(),
-                            mainImageUrl,
-                            cart.getPrice().intValue(),
-                            cart.getQuantity(),
-                            categoryName,
-                            productOption.getSize(),
-                            productOption.getColor(),
-                            product.getDiscountRate()
-                    );
-                })
+    public List<CartDTO> getCartItems(User user) {
+        return cartRepository.findByUser(user).stream()
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public boolean updateCartItem(Long userId, Long cartId, int newQuantity) {
-        Cart cartItem = cartRepository.findByCartIdAndUser_UserId(cartId, userId)
-                .orElseThrow(() -> new RuntimeException("해당 장바구니 아이템을 찾을 수 없습니다."));
+    @Transactional
+    public CartDTO addToCart(User user, Long productId, Long optionId, int quantity) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        if (newQuantity < 1) {
-            return false; // 수량이 1 미만이면 업데이트 방지
+        ProductOption productOption = null;
+        if (optionId != null) {
+            productOption = productOptionRepository.findById(optionId)
+                    .orElseThrow(() -> new RuntimeException("Product option not found"));
         }
 
-        cartItem.setQuantity(newQuantity);
-        cartRepository.save(cartItem);
-        return true;
-    }
+        Optional<Cart> existingCart = cartRepository.findByUserAndProductAndProductOption(user, product, productOption);
 
-
-    @Override
-    public boolean addToCart(Long userId, CartDTO cartDTO) {
-        Optional<User> userOptional = userRepository.findById(userId);
-        Optional<Product> productOptional = productRepository.findById(cartDTO.getProductId());
-
-        if (!userOptional.isPresent() || !productOptional.isPresent()) {
-            throw new IllegalArgumentException("유효하지 않은 사용자 또는 상품 ID입니다.");
-        }
-
-        User user = userOptional.get();
-        Product product = productOptional.get();
-
-
-        Optional<Cart> existingCartItem = cartRepository.findByUserAndProductAndSize(user, product, cartDTO.getSize());
-
-
-
-        if (existingCartItem.isPresent()) {
-            // 같은 상품이 이미 존재하면 수량 증가
-            Cart cart = existingCartItem.get();
-            cart.setQuantity(cart.getQuantity() + cartDTO.getQuantity());
-            cartRepository.save(cart);
+        Cart cart;
+        if (existingCart.isPresent()) {
+            cart = existingCart.get();
+            cart.setQuantity(cart.getQuantity() + quantity);
         } else {
-            // 장바구니에 없으면 새로 추가
-            Cart cart = new Cart();
+            cart = new Cart();
             cart.setUser(user);
             cart.setProduct(product);
-            cart.setQuantity(cartDTO.getQuantity());
-
-            cart.setColor(cartDTO.getColor());
-            cart.setSize(cartDTO.getSize());
-
-            cartRepository.save(cart);
+            cart.setProductOption(productOption);
+            cart.setQuantity(quantity);
         }
 
-        return true;
+        cartRepository.save(cart);
+        return convertToDTO(cart);
+    }
+
+
+    @Override
+    public void removeFromCart(User user, Long cartId) {
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+
+        if (!cart.getUser().equals(user)) {
+            throw new RuntimeException("Unauthorized access");
+        }
+
+        cartRepository.delete(cart);
     }
 
     @Override
-    public void deleteCartItem(Long cartId) {
-        Cart cartItem = cartRepository.findById(cartId)
-                .orElseThrow(() -> new EntityNotFoundException("장바구니 아이템을 찾을 수 없습니다."));
+    public void updateCartQuantity(User user, Long cartId, int quantity) {
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new RuntimeException("Cart item not found"));
 
-        cartRepository.delete(cartItem);
+        if (!cart.getUser().equals(user)) {
+            throw new RuntimeException("Unauthorized access");
+        }
+
+        cart.setQuantity(quantity);
+        cartRepository.save(cart);
     }
 
+    @Override
+    public void clearCart(User user) {
+        List<Cart> cartItems = cartRepository.findByUser(user);
+        cartRepository.deleteAll(cartItems);
+    }
 
+    private CartDTO convertToDTO(Cart cart) {
+        Product product = cart.getProduct();
+        ProductOption productOption = cart.getProductOption();
 
+        return new CartDTO(
+                cart.getCartId(),
+                product.getProductId(),
+                product.getName(),
+                product.getMainImageUrl(),
+                product.getPrice(),
+                cart.getQuantity(),
+                product.getCategory() != null ? product.getCategory().getName() : "카테고리 없음",
+                productOption != null ? productOption.getOptionId() : null,
+                product.getDiscountRate(),
+                cart.getUser().getUserId(),
+                productOption != null ? productOption.getColor() : "색상 없음",
+                productOption != null ? productOption.getSize() : "사이즈 없음"
+
+        );
+    }
 }

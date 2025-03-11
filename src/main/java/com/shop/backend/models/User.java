@@ -30,6 +30,7 @@ import java.util.List;
         })
 public class User {
 
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
@@ -174,7 +175,6 @@ public class User {
         addresses.add(address);
         address.setUser(this); // 양방향 관계 설정
     }
-
 
 
 }
