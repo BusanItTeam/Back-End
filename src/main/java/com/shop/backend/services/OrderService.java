@@ -91,7 +91,9 @@ public class OrderService {
     // Order를 OrderDTO로 변환
     private OrderDTO convertToOrderDTO(Order order) {
         OrderDTO dto = new OrderDTO(); // 기본 생성자로 수정
-        dto.setUserId(order.getUser().getUserId()); // 수정된 부분
+        dto.setOrderId(order.getOrderId());
+        dto.setUserId(order.getUser().getUserId());
+        dto.setName(order.getUser().getName());
         dto.setTotalPrice(order.getTotalPrice());
         dto.setStatus(order.getStatus());
         dto.setShippingCost(order.getShippingCost());
@@ -110,9 +112,13 @@ public class OrderService {
     private OrderDetailDTO convertToOrderDetailDTO(OrderDetail orderDetail) {
         OrderDetailDTO dto = new OrderDetailDTO(); // 기본 생성자로 수정
         dto.setProductId(orderDetail.getProduct().getProductId());
+        dto.setProductName(orderDetail.getProduct().getName());
+        dto.setImage(orderDetail.getProduct().getMainImageUrl());
         dto.setQuantity(orderDetail.getQuantity());
         dto.setPrice(orderDetail.getPrice());
         dto.setOptionId(orderDetail.getProductOption() != null ? orderDetail.getProductOption().getOptionId() : null);
+        dto.setOptionColor(orderDetail.getProductOption().getColor());
+        dto.setOptionSize(orderDetail.getProductOption().getSize());
         return dto;
     }
 }
