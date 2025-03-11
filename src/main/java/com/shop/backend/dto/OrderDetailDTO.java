@@ -9,6 +9,5 @@ public class OrderDetailDTO {
     private Long productId;
     private int quantity;
     private BigDecimal price;
-    private String color;
-    private String size;
+    private Long OptionId;
 }
