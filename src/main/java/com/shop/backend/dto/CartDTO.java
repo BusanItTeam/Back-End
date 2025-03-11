@@ -1,37 +1,43 @@
 package com.shop.backend.dto;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 @Data
-@Getter
-@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class CartDTO {
     private Long cartId;
     private Long productId;
     private String productName;
-    private String productImageUrl; // ✅ String 타입으로 유지
-    private int productPrice; // ✅ int 타입으로 유지
+    private String productImageUrl;
+    private BigDecimal price;
     private int quantity;
+    private String categoryName;
+    private Long optionId;
+    private BigDecimal discountRate;
+    private Long userId;
+    private Timestamp createdAt;
     private String color;
     private String size;
-    private String categoryName;
-    private BigDecimal discountRate;
 
-    public CartDTO(Long cartId, Long productId, String name, String mainImageUrl, int priceAsInt, int quantity, String categoryName, String size, String color, BigDecimal discountRate) {
+
+
+
+    public CartDTO(Long cartId, Long productId, String name, String mainImageUrl, BigDecimal price, int quantity, String s, Long aLong, BigDecimal discountRate, Long userId, String color, String size) {
         this.cartId = cartId;
         this.productId = productId;
         this.productName = name;
         this.productImageUrl = mainImageUrl;
-        this.productPrice = priceAsInt;
+        this.price = price;
         this.quantity = quantity;
-        this.categoryName = categoryName;
+        this.categoryName = s;
+        this.optionId = aLong;
+        this.discountRate = discountRate;
         this.color = color;
         this.size = size;
-        this.discountRate = discountRate;
 
     }
 
