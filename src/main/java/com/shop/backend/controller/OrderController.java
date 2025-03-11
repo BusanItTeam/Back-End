@@ -1,14 +1,14 @@
 package com.shop.backend.controller;
 
-import com.shop.backend.dto.OrderRequestDTO;
-import com.shop.backend.dto.OrderResponseDTO;
+import com.shop.backend.dto.OrderDTO;
+import com.shop.backend.models.Order;
 import com.shop.backend.services.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -17,23 +17,15 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
-    public OrderController(OrderService orderService) {
-        this.orderService = orderService;
-    }
-
+    // 주문 생성 API
     @PostMapping("/create")
-    public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody OrderRequestDTO requestDto) {
-        return ResponseEntity.ok(orderService.createOrder(requestDto));
-    }
-
-    @GetMapping
-    public ResponseEntity<List<OrderResponseDTO>> getAllOrders() {
-        return ResponseEntity.ok(orderService.getAllOrders());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<OrderResponseDTO> getOrderById(@PathVariable Long id) {
-        return ResponseEntity.ok(orderService.getOrderById(id));
+    public ResponseEntity<Order> createOrder(@RequestBody OrderDTO orderDTO) {
+        try {
+            Order order = orderService.createOrder(orderDTO);
+            return ResponseEntity.ok(order);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);  // 에러 처리 추가 가능
+        }
     }
 }
 
