@@ -1,58 +1,76 @@
 package com.shop.backend.services;
 
-import com.shop.backend.dto.OrderRequestDTO;
-import com.shop.backend.dto.OrderResponseDTO;
-import com.shop.backend.models.Order;
-import com.shop.backend.models.OrderStatus;
-import com.shop.backend.models.User;
-import com.shop.backend.repository.OrderRepository;
-import com.shop.backend.repository.UserRepository;
+
+import com.shop.backend.dto.OrderDTO;
+import com.shop.backend.dto.OrderDetailDTO;
+import com.shop.backend.models.*;
+import com.shop.backend.repository.*;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
 
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private OrderDetailRepository orderDetailRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
+
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private ProductOptionRepository productOptionRepository;
 
-    public OrderService(OrderRepository orderRepository, UserRepository userRepository) {
-        this.orderRepository = orderRepository;
-        this.userRepository = userRepository;
-    }
-
-
-    public OrderResponseDTO createOrder(
-            OrderRequestDTO requestDto) {
-        User user = userRepository.findById(requestDto.getUserId())
+    @Transactional
+    public Order createOrder(OrderDTO orderDTO) {
+        User user = userRepository.findById(orderDTO.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Order order = new Order();
-        order.setUser(user);
-        order.setTotalPrice(requestDto.getTotalPrice());
-        order.setStatus(OrderStatus.PENDING);
+        order.setUser(user);  // 사용자는 별도로 로딩하여 설정
+        order.setTotalPrice(orderDTO.getTotalPrice());
+        order.setStatus(OrderStatus.PENDING);  // 초기 상태는 PENDING
+        order.setShippingCost(orderDTO.getShippingCost());
+        order.setPaymentMethod(orderDTO.getPaymentMethod());
+        order.setRefundMethod(orderDTO.getRefundMethod());
+        order.setShippingAddress(orderDTO.getShippingAddress());
+        order.setRecipient(orderDTO.getRecipient());
+        order.setOrderMessage(orderDTO.getOrderMessage());
 
-        order = orderRepository.save(order);
-        return new OrderResponseDTO(order);
+        // 주문 저장
+        orderRepository.save(order);
+
+        // 주문 상세 저장
+        List<OrderDetail> orderDetails = new ArrayList<>();
+        for (OrderDetailDTO detailDTO : orderDTO.getOrderDetails()) {
+            Product product = productRepository.findById(detailDTO.getProductId()).orElseThrow(() -> new RuntimeException("Product not found"));
+            ProductOption productOption = productOptionRepository.findByProduct_ProductId(detailDTO.getProductId()).orElseThrow(() -> new RuntimeException("Product option not found"));
+
+            OrderDetail orderDetail = new OrderDetail();
+            orderDetail.setOrder(order);
+            orderDetail.setProduct(product);
+            orderDetail.setColor(productOption.getColor());
+            orderDetail.setSize(productOption.getSize());
+            orderDetail.setQuantity(detailDTO.getQuantity());
+            orderDetail.setPrice(product.getPrice());  // 상품 가격 설정
+            orderDetail.setTotalPrice(product.getPrice().multiply(BigDecimal.valueOf(detailDTO.getQuantity())));  // 총 가격 계산
+
+            orderDetails.add(orderDetail);
+        }
+
+        order.setOrderDetails(orderDetails);
+        orderDetailRepository.saveAll(orderDetails); // 주문 상세 항목 저장
+
+        return order;
     }
-
-    public List<OrderResponseDTO> getAllOrders() {
-        return orderRepository.findAll().stream()
-                .map(OrderResponseDTO::new)
-                .collect(Collectors.toList());
-    }
-
-    public OrderResponseDTO getOrderById(Long id) {
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-        return new OrderResponseDTO(order);
-    }
-
-
 }

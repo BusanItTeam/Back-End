@@ -31,6 +31,13 @@ public class Order {
     @Column(nullable = false)
     private Timestamp createdAt;
 
+    private int shippingCost;
+    private String paymentMethod;
+    private String refundMethod;
+    private String shippingAddress;
+    private String recipient;
+    private String orderMessage;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderDetail> orderDetails;
 
