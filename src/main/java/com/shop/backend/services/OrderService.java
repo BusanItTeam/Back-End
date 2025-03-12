@@ -55,7 +55,7 @@ public class OrderService {
         List<OrderDetail> orderDetails = new ArrayList<>();
         for (OrderDetailDTO detailDTO : orderDTO.getOrderDetails()) {
             Product product = productRepository.findById(detailDTO.getProductId()).orElseThrow(() -> new RuntimeException("Product not found"));
-            ProductOption productOption = productOptionRepository.findById(detailDTO.getProductId()).orElseThrow(() -> new RuntimeException("Product option not found"));
+            ProductOption productOption = productOptionRepository.findById(detailDTO.getOptionId()).orElseThrow(() -> new RuntimeException("Product option not found"));
 
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrder(order);
@@ -121,4 +121,14 @@ public class OrderService {
         dto.setOptionSize(orderDetail.getProductOption().getSize());
         return dto;
     }
+
+    // 배송 상태 변경
+    @Transactional
+    public void updateOrderStatus(Long orderId, OrderStatus status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("주문 없음"));
+        order.setStatus(status); // ✅ enum 타입으로 직접 설정
+    }
+
+
 }

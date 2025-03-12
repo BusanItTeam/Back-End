@@ -4,9 +4,9 @@ package com.shop.backend.models;
 public enum OrderStatus {
     PENDING("입금대기중"),
     PAID("결제완료"),
-    SHIPPED("배송완료"),
-    CANCELLED("취소됨"),
-    READY_FOR_SHIPPING("배송준비중");
+    READY_FOR_SHIPPING("배송준비중"),
+    SHIPPING("배송중"),
+    SHIPPED("배송완료"),;
 
     private final String description;
 
