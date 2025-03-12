@@ -131,4 +131,13 @@ public class OrderService {
     }
 
 
+    public List<OrderDTO> getOrdersByUser(String username) {
+        User user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Order> userOrders = orderRepository.findByUser(user);
+        return userOrders.stream()
+                .map(this::convertToOrderDTO)
+                .collect(Collectors.toList());
+    }
 }

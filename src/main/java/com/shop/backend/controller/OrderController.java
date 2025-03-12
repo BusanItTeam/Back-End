@@ -6,6 +6,7 @@ import com.shop.backend.models.OrderStatus;
 import com.shop.backend.services.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,6 +42,12 @@ public class OrderController {
     public ResponseEntity<OrderDTO> getOrderById(@PathVariable Long orderId) {
         OrderDTO order = orderService.getOrderById(orderId);
         return ResponseEntity.ok(order);
+    }
+    // 사용자별 주문 내역 조회 API 추가
+    @GetMapping("/history")
+    public ResponseEntity<List<OrderDTO>> getOrderHistory(Authentication authentication) {
+        List<OrderDTO> orders = orderService.getOrdersByUser(authentication.getName());
+        return ResponseEntity.ok(orders);
     }
 
     //배송 상태 변경

@@ -1,5 +1,6 @@
 package com.shop.backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.shop.backend.models.Order;
 import com.shop.backend.models.OrderStatus;
 import lombok.Data;
@@ -19,4 +20,6 @@ public class OrderResponseDTO {
         this.status = order.getStatus();
         this.createdAt = order.getCreatedAt();
     }
+
+
 }
