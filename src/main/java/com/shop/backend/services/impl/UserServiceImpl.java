@@ -195,8 +195,24 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    // 포인트 업데이트
+    @Transactional
+    public void updateUserPoints(Long userId, int usedPoints, int earnedPoints) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // 사용 포인트 차감
+        int currentPoints = user.getPoints();
+        if (currentPoints < usedPoints) {
+            throw new IllegalArgumentException("포인트가 부족합니다.");
+        }
+        user.setPoints(currentPoints - usedPoints);
 
+        // 적립 포인트 추가
+        user.setPoints(user.getPoints() + earnedPoints);
+
+        userRepository.save(user);
+    }
 
 
 
