@@ -38,6 +38,7 @@ public interface UserService {
     //이메일 검증
     boolean verifyEmailCode(String email, String code);
 
+    void updateUserPoints(Long userId, int usedPoints, int earnedPoints);
 
 
 }

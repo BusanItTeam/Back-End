@@ -8,7 +8,9 @@ import java.util.List;
 
 @Data
 public class OrderDTO {
+    private Long orderId;
     private Long userId;
+    private String name;
     private BigDecimal totalPrice;
     private OrderStatus status;
     private int shippingCost;
@@ -18,4 +20,5 @@ public class OrderDTO {
     private String recipient;
     private String orderMessage;
     private List<OrderDetailDTO> orderDetails;
+    private int stock;
 }

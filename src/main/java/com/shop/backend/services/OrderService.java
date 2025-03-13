@@ -32,6 +32,12 @@ public class OrderService {
     @Autowired
     private ProductOptionRepository productOptionRepository;
 
+    @Autowired
+    private InventoryRepository inventoryRepository;
+
+    @Autowired
+    private CartRepository cartRepository;
+
     @Transactional
     public Order createOrder(OrderDTO orderDTO) {
         User user = userRepository.findById(orderDTO.getUserId())
@@ -51,11 +57,13 @@ public class OrderService {
         // 주문 저장
         orderRepository.save(order);
 
+
+
         // 주문 상세 저장
         List<OrderDetail> orderDetails = new ArrayList<>();
         for (OrderDetailDTO detailDTO : orderDTO.getOrderDetails()) {
             Product product = productRepository.findById(detailDTO.getProductId()).orElseThrow(() -> new RuntimeException("Product not found"));
-            ProductOption productOption = productOptionRepository.findById(detailDTO.getProductId()).orElseThrow(() -> new RuntimeException("Product option not found"));
+            ProductOption productOption = productOptionRepository.findById(detailDTO.getOptionId()).orElseThrow(() -> new RuntimeException("Product option not found"));
 
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrder(order);
@@ -65,13 +73,35 @@ public class OrderService {
             orderDetail.setPrice(product.getPrice());  // 상품 가격 설정
             orderDetail.setTotalPrice(product.getPrice().multiply(BigDecimal.valueOf(detailDTO.getQuantity())));  // 총 가격 계산
 
+            Inventory inventory = inventoryRepository.findById(productOption.getInventory().getInventoryId())
+                    .orElseThrow(() -> new RuntimeException("Inventory not found"));
+
+            if (inventory.getStock() < orderDetail.getQuantity()) {
+                throw new RuntimeException("재고가 부족합니다. 상품: " + product.getName());
+            }
+
+            inventory.setStock(inventory.getStock() - detailDTO.getQuantity());
+            inventoryRepository.save(inventory);
+
+
             orderDetails.add(orderDetail);
         }
 
         order.setOrderDetails(orderDetails);
         orderDetailRepository.saveAll(orderDetails); // 주문 상세 항목 저장
 
+        removeItemsFromCart(user, orderDTO);
+
         return order;
+    }
+
+    private void removeItemsFromCart(User user, OrderDTO orderDTO) {
+        List<Long> productIds = orderDTO.getOrderDetails().stream()
+                .map(OrderDetailDTO::getProductId)
+                .collect(Collectors.toList());
+
+        // 카트에서 해당 상품 삭제
+        cartRepository.deleteByUserAndProductIds(user, productIds);
     }
 
     // 모든 주문 조회
@@ -91,7 +121,9 @@ public class OrderService {
     // Order를 OrderDTO로 변환
     private OrderDTO convertToOrderDTO(Order order) {
         OrderDTO dto = new OrderDTO(); // 기본 생성자로 수정
-        dto.setUserId(order.getUser().getUserId()); // 수정된 부분
+        dto.setOrderId(order.getOrderId());
+        dto.setUserId(order.getUser().getUserId());
+        dto.setName(order.getUser().getName());
         dto.setTotalPrice(order.getTotalPrice());
         dto.setStatus(order.getStatus());
         dto.setShippingCost(order.getShippingCost());
@@ -110,9 +142,23 @@ public class OrderService {
     private OrderDetailDTO convertToOrderDetailDTO(OrderDetail orderDetail) {
         OrderDetailDTO dto = new OrderDetailDTO(); // 기본 생성자로 수정
         dto.setProductId(orderDetail.getProduct().getProductId());
+        dto.setProductName(orderDetail.getProduct().getName());
+        dto.setImage(orderDetail.getProduct().getMainImageUrl());
         dto.setQuantity(orderDetail.getQuantity());
         dto.setPrice(orderDetail.getPrice());
         dto.setOptionId(orderDetail.getProductOption() != null ? orderDetail.getProductOption().getOptionId() : null);
+        dto.setOptionColor(orderDetail.getProductOption().getColor());
+        dto.setOptionSize(orderDetail.getProductOption().getSize());
         return dto;
     }
+
+    // 배송 상태 변경
+    @Transactional
+    public void updateOrderStatus(Long orderId, OrderStatus status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("주문 없음"));
+        order.setStatus(status); // ✅ enum 타입으로 직접 설정
+    }
+
+
 }

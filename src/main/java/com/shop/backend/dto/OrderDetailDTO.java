@@ -10,4 +10,12 @@ public class OrderDetailDTO {
     private int quantity;
     private BigDecimal price;
     private Long OptionId;
+
+    public String ProductName;
+
+    public String OptionSize;
+    public String OptionColor;
+
+    public String Image;
+    private int stock;
 }

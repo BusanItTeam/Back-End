@@ -4,8 +4,11 @@ import com.shop.backend.dto.ProductOptionDTO;
 import com.shop.backend.dto.WishListDTO;
 import com.shop.backend.models.Product;
 import com.shop.backend.models.ProductOption;
+import com.shop.backend.models.User;
 import com.shop.backend.models.WishList;
 import com.shop.backend.repository.ProductOptionRepository;
+import com.shop.backend.repository.UserRepository;
+import com.shop.backend.repository.WishListRepository;
 import com.shop.backend.services.ProductOptionService;
 import com.shop.backend.services.ProductService;
 import com.shop.backend.services.WishListService;
@@ -32,6 +35,13 @@ public class WishListController {
     @Autowired
     private ProductOptionService productOptionService;
 
+    @Autowired
+    private ProductOptionRepository productOptionRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private WishListRepository wishListRepository;
+
 
     @PostMapping
     public ResponseEntity<WishListDTO> createWishList(@RequestBody WishListDTO wishListDTO,
@@ -52,10 +62,25 @@ public class WishListController {
                     WishListDTO dto = convertToDTO(wishList);
 
                     // 옵션이 없는 경우 기본값 설정
+// 상품 옵션이 없을 경우 상품에 대한 옵션 목록을 가져와서 추가
                     if (wishList.getProductOption() == null) {
-                        dto.setOption("옵션을 선택해주세요.");
-                        
+                        List<ProductOption> productOptions = productOptionRepository.findByProduct_ProductId(product.getProductId());
+                        List<ProductOptionDTO> productOptionDTOs = productOptions.stream()
+                                .map(option -> {
+                                    ProductOptionDTO optionDTO = new ProductOptionDTO();
+                                    optionDTO.setOptionId(option.getOptionId());
+                                    optionDTO.setColor(option.getColor());
+                                    optionDTO.setSize(option.getSize());
+                                    return optionDTO;
+                                }).collect(Collectors.toList());
+                        dto.setProductOptions(productOptionDTOs); // 옵션 리스트 추가
                     }
+
+                    // 옵션이 있는 경우, 해당 옵션 정보 설정
+                    else {
+                        dto.setOption(getProductOption(wishList.getProduct(), wishList.getProductOption().getOptionId()));
+                    }
+
 
                     dto.setProductImage(getProductImageUrl(product));
                     // 할인된 가격으로 설정
@@ -146,4 +171,37 @@ public class WishListController {
         }
         return "Color: - , Size: - "; // 옵션이 없거나 일치하는 옵션이 없을 경우
     }
+
+
+    @PutMapping("/update-option")
+    public ResponseEntity<WishListDTO> updateWishListOption(@RequestBody WishListDTO wishListDTO,
+                                                            @AuthenticationPrincipal UserDetails userDetails) {
+        String username = userDetails.getUsername();
+        // 사용자 확인
+        User user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // 위시리스트 항목 확인
+        WishList wishList = wishListRepository.findById(wishListDTO.getWishListId())
+                .orElseThrow(() -> new RuntimeException("WishList not found"));
+
+        // 해당 상품이 사용자에 속한 상품인지 확인
+        if (!wishList.getUser().equals(user)) {
+            throw new RuntimeException("You are not authorized to update this wishlist item.");
+        }
+
+        // 선택된 옵션 ID로 ProductOption 찾기
+        ProductOption productOption = productOptionRepository.findById(wishListDTO.getOptionId())
+                .orElseThrow(() -> new RuntimeException("Product option not found"));
+
+        // 옵션 업데이트
+        wishList.setProductOption(productOption);
+
+        // DB에 저장
+        wishListRepository.save(wishList);
+
+        // 업데이트된 DTO 반환
+        return ResponseEntity.ok(convertToDTO(wishList));
+    }
+
 }
