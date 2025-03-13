@@ -49,6 +49,12 @@ public class OrderController {
         OrderDTO order = orderService.getOrderById(orderId);
         return ResponseEntity.ok(order);
     }
+    // 사용자별 주문 내역 조회 API 추가
+    @GetMapping("/history")
+    public ResponseEntity<List<OrderDTO>> getOrderHistory(Authentication authentication) {
+        List<OrderDTO> orders = orderService.getOrdersByUser(authentication.getName());
+        return ResponseEntity.ok(orders);
+    }
 
     //배송 상태 변경
     @PutMapping("/{orderId}/status")

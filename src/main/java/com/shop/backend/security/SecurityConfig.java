@@ -68,6 +68,8 @@ public class SecurityConfig {
                                 .requestMatchers("/oauth2/**").permitAll()
                                 .requestMatchers("/images/**").permitAll()
                                 .requestMatchers("/api/mypage/**").authenticated()
+                                .requestMatchers("/api/orders/**").authenticated()
+                                .requestMatchers("/api/reviews/**").authenticated()
                                 .requestMatchers("/api/auths/user").authenticated()
                                 .anyRequest().authenticated())
                 .oauth2Login(oauth2 -> {
