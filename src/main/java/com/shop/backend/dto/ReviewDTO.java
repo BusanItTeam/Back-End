@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class ReviewDTO {
     private Long productId;
+    private int rating;
     private String content;
-    private int rating; // 정수 값으로 전달됨
 }
