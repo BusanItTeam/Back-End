@@ -54,6 +54,7 @@ public class WishListController {
                     // 옵션이 없는 경우 기본값 설정
                     if (wishList.getProductOption() == null) {
                         dto.setOption("옵션을 선택해주세요.");
+                        
                     }
 
                     dto.setProductImage(getProductImageUrl(product));
