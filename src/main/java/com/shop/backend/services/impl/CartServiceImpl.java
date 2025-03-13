@@ -49,6 +49,8 @@ public class CartServiceImpl implements CartService {
                     .orElseThrow(() -> new RuntimeException("Product option not found"));
         }
 
+
+
         Optional<Cart> existingCart = cartRepository.findByUserAndProductAndProductOption(user, product, productOption);
 
         Cart cart;
@@ -115,7 +117,8 @@ public class CartServiceImpl implements CartService {
                 product.getDiscountRate(),
                 cart.getUser().getUserId(),
                 productOption != null ? productOption.getColor() : "색상 없음",
-                productOption != null ? productOption.getSize() : "사이즈 없음"
+                productOption != null ? productOption.getSize() : "사이즈 없음",
+                productOption.getInventory().getStock()
 
         );
     }

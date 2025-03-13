@@ -20,4 +20,5 @@ public class OrderDTO {
     private String recipient;
     private String orderMessage;
     private List<OrderDetailDTO> orderDetails;
+    private int stock;
 }

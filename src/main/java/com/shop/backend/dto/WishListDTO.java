@@ -3,6 +3,7 @@ package com.shop.backend.dto;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 public class WishListDTO {
@@ -15,5 +16,8 @@ public class WishListDTO {
     private String productName; // 상품명
     private String productImage; // 상품 이미지 URL
     private BigDecimal price; // 상품 가격
-    private String option; // 선택 옵션
+    private String option;
+    private List<ProductOptionDTO> productOptions;
+
+
 }

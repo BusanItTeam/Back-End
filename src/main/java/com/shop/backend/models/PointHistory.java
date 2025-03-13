@@ -29,4 +29,6 @@ public class PointHistory {
     @Column(nullable = false)
     private Timestamp createdAt;
 
+    private String comment;
+
 }

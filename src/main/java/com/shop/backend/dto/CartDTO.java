@@ -22,11 +22,12 @@ public class CartDTO {
     private Timestamp createdAt;
     private String color;
     private String size;
+    private int stock;
 
 
 
 
-    public CartDTO(Long cartId, Long productId, String name, String mainImageUrl, BigDecimal price, int quantity, String s, Long aLong, BigDecimal discountRate, Long userId, String color, String size) {
+    public CartDTO(Long cartId, Long productId, String name, String mainImageUrl, BigDecimal price, int quantity, String s, Long aLong, BigDecimal discountRate, Long userId, String color, String size, int stock) {
         this.cartId = cartId;
         this.productId = productId;
         this.productName = name;
@@ -38,6 +39,7 @@ public class CartDTO {
         this.discountRate = discountRate;
         this.color = color;
         this.size = size;
+        this.stock = stock;
 
     }
 
