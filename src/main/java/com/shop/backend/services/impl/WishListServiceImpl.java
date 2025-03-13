@@ -50,6 +50,9 @@ public class WishListServiceImpl implements WishListService {
             throw new RuntimeException("이미 위시리스트에 있는 상품입니다.");
         }
 
+
+
+
         WishList wishList = new WishList();
         wishList.setUser(user);
         wishList.setProduct(product);

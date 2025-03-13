@@ -32,6 +32,12 @@ public class OrderService {
     @Autowired
     private ProductOptionRepository productOptionRepository;
 
+    @Autowired
+    private InventoryRepository inventoryRepository;
+
+    @Autowired
+    private CartRepository cartRepository;
+
     @Transactional
     public Order createOrder(OrderDTO orderDTO) {
         User user = userRepository.findById(orderDTO.getUserId())
@@ -51,6 +57,8 @@ public class OrderService {
         // 주문 저장
         orderRepository.save(order);
 
+
+
         // 주문 상세 저장
         List<OrderDetail> orderDetails = new ArrayList<>();
         for (OrderDetailDTO detailDTO : orderDTO.getOrderDetails()) {
@@ -65,13 +73,35 @@ public class OrderService {
             orderDetail.setPrice(product.getPrice());  // 상품 가격 설정
             orderDetail.setTotalPrice(product.getPrice().multiply(BigDecimal.valueOf(detailDTO.getQuantity())));  // 총 가격 계산
 
+            Inventory inventory = inventoryRepository.findById(productOption.getInventory().getInventoryId())
+                    .orElseThrow(() -> new RuntimeException("Inventory not found"));
+
+            if (inventory.getStock() < orderDetail.getQuantity()) {
+                throw new RuntimeException("재고가 부족합니다. 상품: " + product.getName());
+            }
+
+            inventory.setStock(inventory.getStock() - detailDTO.getQuantity());
+            inventoryRepository.save(inventory);
+
+
             orderDetails.add(orderDetail);
         }
 
         order.setOrderDetails(orderDetails);
         orderDetailRepository.saveAll(orderDetails); // 주문 상세 항목 저장
 
+        removeItemsFromCart(user, orderDTO);
+
         return order;
+    }
+
+    private void removeItemsFromCart(User user, OrderDTO orderDTO) {
+        List<Long> productIds = orderDTO.getOrderDetails().stream()
+                .map(OrderDetailDTO::getProductId)
+                .collect(Collectors.toList());
+
+        // 카트에서 해당 상품 삭제
+        cartRepository.deleteByUserAndProductIds(user, productIds);
     }
 
     // 모든 주문 조회

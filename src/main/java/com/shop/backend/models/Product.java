@@ -52,8 +52,5 @@ public class Product {
                 : "default.jpg"; // 기본 이미지 경로
     }
 
-    // ✅ 가격을 int로 변환하는 메서드 추가
-    public int getPriceAsInt() {
-        return price != null ? price.intValue() : 0;
-    }
+
 }

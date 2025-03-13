@@ -17,4 +17,5 @@ public class OrderDetailDTO {
     public String OptionColor;
 
     public String Image;
+    private int stock;
 }
