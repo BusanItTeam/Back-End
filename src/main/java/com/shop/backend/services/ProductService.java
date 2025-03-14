@@ -204,4 +204,16 @@ public class ProductService {
         return productRepository.findProductsByIds(productIds);
     }
 
+    public List<Product> getBestSellingProductsByCategory(String categoryName, int limit) {
+        if ("all".equalsIgnoreCase(categoryName)) {
+            return getBestSellingProducts(limit);
+        } else {
+            List<Object[]> bestSellingProducts = orderDetailRepository.findTopNBestSellingProductsByCategory(categoryName, limit);
+            List<Long> productIds = bestSellingProducts.stream()
+                    .map(array -> ((Product) array[0]).getProductId())
+                    .collect(Collectors.toList());
+            return productRepository.findProductsByIds(productIds);
+        }
+    }
+
 }

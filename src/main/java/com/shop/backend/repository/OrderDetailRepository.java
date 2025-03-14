@@ -16,4 +16,6 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
     List<Object[]> findTopNBestSellingProducts(@Param("limit") int limit);
     @Query("SELECT od.product, COUNT(od) as orderCount FROM OrderDetail od GROUP BY od.product HAVING COUNT(od) > 0 ORDER BY orderCount DESC")
     List<Object[]> findAllBestSellingProducts();
+    @Query("SELECT od.product, COUNT(od) as orderCount FROM OrderDetail od JOIN od.product p WHERE p.category.name = :categoryName GROUP BY od.product ORDER BY orderCount DESC")
+    List<Object[]> findTopNBestSellingProductsByCategory(@Param("categoryName") String categoryName, @Param("limit") int limit);
 }
