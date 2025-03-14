@@ -232,4 +232,9 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    @GetMapping("/best-selling")
+    public ResponseEntity<List<Product>> getBestSellingProducts(@RequestParam(defaultValue = "8") int limit) {
+        List<Product> bestSellingProducts = productService.getBestSellingProducts(limit);
+        return ResponseEntity.ok(bestSellingProducts);
+    }
 }
