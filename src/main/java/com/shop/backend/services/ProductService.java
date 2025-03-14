@@ -1,11 +1,7 @@
 package com.shop.backend.services;
 
 import com.shop.backend.models.*;
-import com.shop.backend.repository.InventoryRepository;
-import com.shop.backend.repository.ProductOptionRepository;
-import com.shop.backend.repository.ProductRepository;
-import com.shop.backend.repository.ProductAddImageRepository;
-import com.shop.backend.repository.WishListRepository;
+import com.shop.backend.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +14,7 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -36,6 +33,9 @@ public class ProductService {
 
     @Autowired
     private WishListRepository wishListRepository;
+
+    @Autowired
+    private OrderDetailRepository orderDetailRepository;
 
     @Value("${file.upload.path}")
     private String uploadPath;
@@ -195,4 +195,25 @@ public class ProductService {
             productRepository.delete(product);
         }
     }
+    public List<Product> getBestSellingProducts(int limit) {
+        List<Object[]> bestSellingProducts = orderDetailRepository.findAllBestSellingProducts();
+        List<Long> productIds = bestSellingProducts.stream()
+                .map(array -> ((Product) array[0]).getProductId())
+                .limit(limit)
+                .collect(Collectors.toList());
+        return productRepository.findProductsByIds(productIds);
+    }
+
+    public List<Product> getBestSellingProductsByCategory(String categoryName, int limit) {
+        if ("all".equalsIgnoreCase(categoryName)) {
+            return getBestSellingProducts(limit);
+        } else {
+            List<Object[]> bestSellingProducts = orderDetailRepository.findTopNBestSellingProductsByCategory(categoryName, limit);
+            List<Long> productIds = bestSellingProducts.stream()
+                    .map(array -> ((Product) array[0]).getProductId())
+                    .collect(Collectors.toList());
+            return productRepository.findProductsByIds(productIds);
+        }
+    }
+
 }
