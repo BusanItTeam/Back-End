@@ -211,7 +211,7 @@ public class AuthController {
     }
 
 
-    @PutMapping("/user")
+    @PutMapping("/edit/user")
     public ResponseEntity<?> updateUserDetails(
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody AddressDTO updateRequest) {
@@ -224,7 +224,7 @@ public class AuthController {
 
 
         // 기존 주소 업데이트 (첫 번째 주소만 수정 가능)
-        if (user.getAddresses().size() > 0) {
+        if (!user.getAddresses().isEmpty()) {
             Address address = user.getAddresses().get(0);
             address.setPostcode(updateRequest.getPostcode());
             address.setAddress(updateRequest.getAddress());

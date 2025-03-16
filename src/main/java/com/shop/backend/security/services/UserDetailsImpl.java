@@ -28,6 +28,7 @@ public class UserDetailsImpl implements UserDetails {
     private String username;
     @Getter
     private String email;
+    @Getter
     private String phoneNumber;
     
 
@@ -116,7 +117,5 @@ public class UserDetailsImpl implements UserDetails {
         return Objects.equals(id, user.id);
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
+
 }
