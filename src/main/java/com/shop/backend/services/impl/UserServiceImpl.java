@@ -197,6 +197,7 @@ public class UserServiceImpl implements UserService {
 
     // 포인트 업데이트
     @Transactional
+    @Override
     public void updateUserPoints(Long userId, int usedPoints, int earnedPoints) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));

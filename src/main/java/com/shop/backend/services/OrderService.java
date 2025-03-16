@@ -1,6 +1,5 @@
 package com.shop.backend.services;
 
-
 import com.shop.backend.dto.OrderDTO;
 import com.shop.backend.dto.OrderDetailDTO;
 import com.shop.backend.models.*;
@@ -38,15 +37,18 @@ public class OrderService {
     @Autowired
     private CartRepository cartRepository;
 
+    @Autowired
+    private ReviewRepository reviewRepository; // ✅ 리뷰 리포지토리 추가
+
     @Transactional
     public Order createOrder(OrderDTO orderDTO) {
         User user = userRepository.findById(orderDTO.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Order order = new Order();
-        order.setUser(user);  // 사용자는 별도로 로딩하여 설정
+        order.setUser(user);
         order.setTotalPrice(orderDTO.getTotalPrice());
-        order.setStatus(OrderStatus.PENDING);  // 초기 상태는 PENDING
+        order.setStatus(OrderStatus.PENDING);
         order.setShippingCost(orderDTO.getShippingCost());
         order.setPaymentMethod(orderDTO.getPaymentMethod());
         order.setRefundMethod(orderDTO.getRefundMethod());
@@ -57,21 +59,21 @@ public class OrderService {
         // 주문 저장
         orderRepository.save(order);
 
-
-
-        // 주문 상세 저장
         List<OrderDetail> orderDetails = new ArrayList<>();
         for (OrderDetailDTO detailDTO : orderDTO.getOrderDetails()) {
-            Product product = productRepository.findById(detailDTO.getProductId()).orElseThrow(() -> new RuntimeException("Product not found"));
-            ProductOption productOption = productOptionRepository.findById(detailDTO.getOptionId()).orElseThrow(() -> new RuntimeException("Product option not found"));
+            Product product = productRepository.findById(detailDTO.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
+
+            ProductOption productOption = productOptionRepository.findById(detailDTO.getOptionId())
+                    .orElseThrow(() -> new RuntimeException("Product option not found"));
 
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrder(order);
             orderDetail.setProduct(product);
             orderDetail.setProductOption(productOption);
             orderDetail.setQuantity(detailDTO.getQuantity());
-            orderDetail.setPrice(product.getPrice());  // 상품 가격 설정
-            orderDetail.setTotalPrice(product.getPrice().multiply(BigDecimal.valueOf(detailDTO.getQuantity())));  // 총 가격 계산
+            orderDetail.setPrice(product.getPrice());
+            orderDetail.setTotalPrice(product.getPrice().multiply(BigDecimal.valueOf(detailDTO.getQuantity())));
 
             Inventory inventory = inventoryRepository.findById(productOption.getInventory().getInventoryId())
                     .orElseThrow(() -> new RuntimeException("Inventory not found"));
@@ -83,12 +85,11 @@ public class OrderService {
             inventory.setStock(inventory.getStock() - detailDTO.getQuantity());
             inventoryRepository.save(inventory);
 
-
             orderDetails.add(orderDetail);
         }
 
         order.setOrderDetails(orderDetails);
-        orderDetailRepository.saveAll(orderDetails); // 주문 상세 항목 저장
+        orderDetailRepository.saveAll(orderDetails);
 
         removeItemsFromCart(user, orderDTO);
 
@@ -100,7 +101,6 @@ public class OrderService {
                 .map(OrderDetailDTO::getProductId)
                 .collect(Collectors.toList());
 
-        // 카트에서 해당 상품 삭제
         cartRepository.deleteByUserAndProductIds(user, productIds);
     }
 
@@ -120,7 +120,7 @@ public class OrderService {
 
     // Order를 OrderDTO로 변환
     private OrderDTO convertToOrderDTO(Order order) {
-        OrderDTO dto = new OrderDTO(); // 기본 생성자로 수정
+        OrderDTO dto = new OrderDTO();
         dto.setOrderId(order.getOrderId());
         dto.setUserId(order.getUser().getUserId());
         dto.setName(order.getUser().getName());
@@ -132,16 +132,23 @@ public class OrderService {
         dto.setShippingAddress(order.getShippingAddress());
         dto.setRecipient(order.getRecipient());
         dto.setOrderMessage(order.getOrderMessage());
-        dto.setOrderDetails(order.getOrderDetails().stream()
-                .map(this::convertToOrderDetailDTO)
-                .collect(Collectors.toList()));
+
+        if (order.getOrderDetails() != null) {
+            dto.setOrderDetails(order.getOrderDetails().stream()
+                    .map(this::convertToOrderDetailDTO)
+                    .collect(Collectors.toList()));
+        } else {
+            dto.setOrderDetails(new ArrayList<>());
+        }
+
         return dto;
     }
 
     // OrderDetail을 OrderDetailDTO로 변환
     private OrderDetailDTO convertToOrderDetailDTO(OrderDetail orderDetail) {
-        OrderDetailDTO dto = new OrderDetailDTO(); // 기본 생성자로 수정
+        OrderDetailDTO dto = new OrderDetailDTO();
         dto.setProductId(orderDetail.getProduct().getProductId());
+        dto.setDiscountRate(orderDetail.getPrice().multiply(BigDecimal.valueOf(orderDetail.getQuantity())));
         dto.setProductName(orderDetail.getProduct().getName());
         dto.setImage(orderDetail.getProduct().getMainImageUrl());
         dto.setQuantity(orderDetail.getQuantity());
@@ -149,6 +156,15 @@ public class OrderService {
         dto.setOptionId(orderDetail.getProductOption() != null ? orderDetail.getProductOption().getOptionId() : null);
         dto.setOptionColor(orderDetail.getProductOption().getColor());
         dto.setOptionSize(orderDetail.getProductOption().getSize());
+
+        // ✅ 리뷰가 존재하는지 확인하는 로직 추가
+        boolean reviewExists = reviewRepository.existsByUserUserIdAndProductProductIdAndProductOptionOptionId(
+                orderDetail.getOrder().getUser().getUserId(),
+                orderDetail.getProduct().getProductId(),
+                orderDetail.getProductOption().getOptionId()
+        );
+        dto.setReviewExists(reviewExists);
+
         return dto;
     }
 
@@ -157,9 +173,8 @@ public class OrderService {
     public void updateOrderStatus(Long orderId, OrderStatus status) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("주문 없음"));
-        order.setStatus(status); // ✅ enum 타입으로 직접 설정
+        order.setStatus(status);
     }
-
 
     public List<OrderDTO> getOrdersByUser(String username) {
         User user = userRepository.findByUserName(username)

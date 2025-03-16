@@ -1,6 +1,8 @@
 package com.shop.backend.dto;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
@@ -10,7 +12,7 @@ public class OrderDetailDTO {
     private int quantity;
     private BigDecimal price;
     private Long OptionId;
-
+    private BigDecimal discountRate;
     public String ProductName;
 
     public String OptionSize;
@@ -18,4 +20,8 @@ public class OrderDetailDTO {
 
     public String Image;
     private int stock;
+    @Getter
+    @Setter
+    private boolean reviewExists;
+
 }
