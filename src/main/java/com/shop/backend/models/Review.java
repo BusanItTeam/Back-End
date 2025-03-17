@@ -25,6 +25,10 @@ public class Review {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @ManyToOne
+    @JoinColumn(name = "option_id", nullable = false)
+    private ProductOption productOption;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Rating rating;
@@ -38,5 +42,6 @@ public class Review {
     @CreationTimestamp
     @Column(nullable = false)
     private Timestamp createdAt;
+
 
 }

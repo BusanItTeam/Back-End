@@ -10,6 +10,7 @@ import java.util.List;
 public class OrderDTO {
     private Long orderId;
     private Long userId;
+    private BigDecimal discountRate;
     private String name;
     private BigDecimal totalPrice;
     private OrderStatus status;

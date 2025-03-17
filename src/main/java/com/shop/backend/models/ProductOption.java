@@ -26,4 +26,6 @@ public class ProductOption {
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "inventory_id", foreignKey = @ForeignKey(name = "FK_PRODUCT_OPTION_INVENTORY"))
     private Inventory inventory;
+
+
 }
