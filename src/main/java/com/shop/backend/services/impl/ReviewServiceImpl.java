@@ -35,23 +35,23 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public Review createReview(User user, Product product, ReviewDTO reviewDTO) {
-        // ✅ 옵션 존재 확인
+        // 옵션 존재 확인
         ProductOption option = productOptionRepository.findById(reviewDTO.getOptionId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 옵션을 찾을 수 없습니다."));
 
-        // ✅ 사용자가 해당 상품을 주문했는지 확인
+        // 사용자가 해당 상품을 주문했는지 확인
         boolean hasPurchased = orderItemRepository.existsByOrder_UserAndProduct(user, product);
         if (!hasPurchased) {
             throw new IllegalArgumentException("이 제품을 주문한 후에만 리뷰를 작성할 수 있습니다.");
         }
 
-        // ✅ 동일한 옵션에 대한 리뷰 중복 검사 (기존 코드 수정)
+        // 동일한 옵션에 대한 리뷰 중복 검사 (기존 코드 수정)
         if (reviewRepository.existsByUserUserIdAndProductProductIdAndProductOptionOptionId(
                 user.getUserId(), product.getProductId(), option.getOptionId())) {
             throw new IllegalArgumentException("이미 이 제품 옵션에 대한 리뷰를 작성하셨습니다.");
         }
 
-        // ✅ 리뷰 저장
+        // 리뷰 저장
         Review review = new Review();
         review.setUser(user);
         review.setProduct(product);
