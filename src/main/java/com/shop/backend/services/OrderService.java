@@ -38,7 +38,7 @@ public class OrderService {
     private CartRepository cartRepository;
 
     @Autowired
-    private ReviewRepository reviewRepository; // ✅ 리뷰 리포지토리 추가
+    private ReviewRepository reviewRepository;
 
     @Transactional
     public Order createOrder(OrderDTO orderDTO) {
@@ -157,7 +157,7 @@ public class OrderService {
         dto.setOptionColor(orderDetail.getProductOption().getColor());
         dto.setOptionSize(orderDetail.getProductOption().getSize());
 
-        // ✅ 리뷰가 존재하는지 확인하는 로직 추가
+        // 리뷰가 존재하는지 확인하는 로직 추가
         boolean reviewExists = reviewRepository.existsByUserUserIdAndProductProductIdAndProductOptionOptionId(
                 orderDetail.getOrder().getUser().getUserId(),
                 orderDetail.getProduct().getProductId(),

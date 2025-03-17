@@ -79,7 +79,7 @@ public class ReviewController {
     public ResponseEntity<?> updateReview(
             @PathVariable Long reviewId,
             @RequestBody ReviewDTO updatedReview,
-            @AuthenticationPrincipal UserDetails userDetails // ✅ 로그인한 사용자 정보 가져오기
+            @AuthenticationPrincipal UserDetails userDetails // 로그인한 사용자 정보 가져오기
     ) {
         Optional<Review> existingReviewOpt = reviewRepository.findById(reviewId);
         if (existingReviewOpt.isEmpty()) {
@@ -88,10 +88,10 @@ public class ReviewController {
 
         Review existingReview = existingReviewOpt.get();
 
-        // ✅ 유저 ID 가져오기
+
         String username = userDetails.getUsername(); // username (유저의 식별자)
 
-        // ✅ 유저 ID로 DB에서 User 객체 가져오기
+        // 유저 ID로 DB에서 User 객체 가져오기
         User currentUser = userRepository.findByUserName(username)
                 .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
 
